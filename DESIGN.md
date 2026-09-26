@@ -263,7 +263,7 @@ GET  /api/state
                 "router": {…same…} | null},
   "dish":   {"status": {}|null, "device_info": {}|null, "config": {}|null, "diagnostics": {}|null,
              "location": {}|null, "location_error": str|null},
-  "router": {"status": {}|null, "clients": []|null, "device_info": {}|null, "ping": {}|null} | null,
+  "router": {"status": {}|null, "clients": []|null, "device_info": {}|null, "ping": {}|null, "ping_age_s": float|null} | null,
   "explain": {"headline", "alerts", "aim", "facts"},                      # explain.explain()
   "controls": [{"name","label","group","confirm","params","available","reason","current"}],
   "running": {"speedtest": {"started": unix_s, "status": {}|null, "done": bool} | null},
