@@ -183,6 +183,26 @@ standing behind the dish". Elevation: positive `want − now` means tilt up, tow
 "confidence": attitude_estimation_state, "uncertainty_deg"}`. When the filter hasn't converged, say so instead of
 giving directions.
 
+**Settled while building (knowledge piece):**
+- `available` / `current` / `facts` / `explain` read the `/api/state` shape: `state["dish"]["status"|"config"|"device_info"]`,
+  `state["router"]` (None = no router), `state["localdish"][device]["reachable"|"error"]`, and `state["running"]["speedtest"]`.
+  `config` and `device_info` are accepted wrapped or unwrapped.
+- **A missing field means its proto3 default**, because the decoder fills none in. In a config that was read, a missing
+  `snow_melt_mode` is AUTO, a missing `power_save_mode` is off, and a missing `location_request_mode` is NONE. With no
+  config read at all, `current()` is `{}`.
+- Params are strict: all required, no extras, real bools and ints. Types are `bool`, `int` (min/max) and `choice` (choices).
+- `available` also says "the dish/router is not answering" and "a speed test is running". The UNIMPLEMENTED mark is the
+  server's.
+- Outages carry `cause_text`. **NaN becomes None** in the ring and must be null in every JSON body (the router's ping
+  reports `latencyMs: NaN` for dropped targets), so the server serializes with `allow_nan=False` after cleaning.
+- `aim` gives compass bearings 0–360 and returns None for dishes with motors. When unconverged, turn, tilt and ok are None
+  and there is one line of text.
+- Headline order: unreachable → connecting → disabled → outage (booting / searching / obstructed / sleeping / stowed /
+  too hot / other) → no internet → degraded → online ("19 ms to starlink"). A pending update adds "restarts ~hh:mm" to the
+  detail. **Clock times use this computer's local time**: the dish's `utc_offset_s` ignores daylight saving.
+- **The headline flickers at 1 Hz** on an obstructed dish (a Mini showed 76 drop transitions in 15 min). So the poller
+  logs an event only when the headline **tone** changes, and not more than once every 30 s for the same tone pair.
+
 ### poller.py (J2)
 
 One thread per device; the page only reads caches. Cadence (the defaults; a constant table at the top of the file):

@@ -156,7 +156,7 @@ class HeadlineTest(unittest.TestCase):
 
     def test_online(self):
         h = self.check(status(), "online", "ok")
-        self.assertEqual(h["detail"], "25 ms to the internet")
+        self.assertEqual(h["detail"], "25 ms to starlink")
         self.check(STANDARD_STATUS, "online", "ok")
 
     def test_update_pending(self):

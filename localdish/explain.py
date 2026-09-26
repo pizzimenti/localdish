@@ -264,7 +264,7 @@ def headline(status: dict | None, error: str | None) -> dict:
         return said("degraded", "warn", "; ".join(notes))
 
     latency = _num(status.get("pop_ping_latency_ms"))
-    return said("online", "ok", f"{_ms(latency)} to the internet" if latency else None)
+    return said("online", "ok", f"{_ms(latency)} to starlink" if latency else None)
 
 
 def alerts(status: dict) -> list[dict]:
