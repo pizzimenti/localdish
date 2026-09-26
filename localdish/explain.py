@@ -127,6 +127,14 @@ def _clock_minutes(minutes: int) -> str:
     return f"{minutes // 60:02d}:{minutes % 60:02d}"
 
 
+def _utc_minutes_local(minutes: int, now_unix: float | None = None) -> str:
+    """A power-save schedule minute (minutes after midnight **UTC** — checked against the Starlink app, which showed
+    615 as 3:15 AM in UTC−7) as hh:mm on this computer's clock, today."""
+    now_unix = time.time() if now_unix is None else now_unix
+    midnight_utc = int(now_unix // 86400) * 86400
+    return time.strftime("%H:%M", time.localtime(midnight_utc + (int(minutes) % 1440) * 60))
+
+
 def _clock_unix(t: float) -> str:
     """hh:mm on this computer's clock (the dish's own utc_offset_s ignores daylight saving)."""
     return time.strftime("%H:%M", time.localtime(t))
@@ -379,7 +387,7 @@ def facts(state: dict) -> list[list]:
         if config.get("power_save_mode"):
             start = int(config.get("power_save_start_minutes", 0))
             length = int(config.get("power_save_duration_minutes", 0))
-            add("power save", f"on, {_clock_minutes(start)}–{_clock_minutes(start + length)}")
+            add("power save", f"on, {_utc_minutes_local(start)}–{_utc_minutes_local(start + length)}")
         else:
             add("power save", "off")
         add("location sharing", "on (local network)" if config.get("location_request_mode") == "LOCAL" else "off")

@@ -285,7 +285,8 @@ class FactsTest(unittest.TestCase):
         self.assertTrue(f["update restart"].startswith("~"))
         self.assertEqual(f["update hour"], "03:00")
         self.assertEqual(f["snow melt"], "off")
-        self.assertEqual(f["power save"], "on, 09:00–13:00")
+        # the schedule is in UTC minutes (540 for 240 = 09:00–13:00 UTC); shown on this computer's clock
+        self.assertEqual(f["power save"], "on, %s–%s" % (explain._utc_minutes_local(540), explain._utc_minutes_local(780)))
         self.assertEqual(f["location sharing"], "off")
         self.assertEqual(f["obstructed sky"], "12.5 %")
         self.assertEqual(f["time obstructed"], "3.2 %")
@@ -309,7 +310,9 @@ class FactsTest(unittest.TestCase):
     def test_power_save_past_midnight(self):
         state = {"dish": {"config": {"power_save_mode": True, "power_save_start_minutes": 1380,
                                      "power_save_duration_minutes": 120}}}
-        self.assertEqual(dict(explain.facts(state))["power save"], "on, 23:00–01:00")
+        # 23:00 UTC for 2 h ends at 01:00 UTC the next day; both shown on this computer's clock
+        self.assertEqual(dict(explain.facts(state))["power save"],
+                         "on, %s–%s" % (explain._utc_minutes_local(23 * 60), explain._utc_minutes_local(25 * 60)))
 
     def test_nothing(self):
         self.assertEqual(explain.facts({}), [])
@@ -360,3 +363,28 @@ class AimHoldTest(unittest.TestCase):
         good = m["dish"]["get_status"]["dish_get_status"]
         state = {"dish": {"status": good, "aim_status": good, "aim_age_s": 999}, "localdish": {"dish": {"reachable": True}}}
         self.assertNotIn("held_s", explain.explain(state, 0)["aim"])
+
+
+
+@unittest.skipUnless(hasattr(time, "tzset"), "needs time.tzset")
+class ScheduleClockTest(unittest.TestCase):
+    """Checked against the Starlink app on a Mini: start 615, 225 minutes, shown as 3:15 AM → 7:00 AM in UTC−7."""
+
+    def setUp(self):
+        self._tz = os.environ.get("TZ")
+        os.environ["TZ"] = "LST+7"          # a fixed UTC−7, whatever today's date
+        time.tzset()
+
+    def tearDown(self):
+        if self._tz is None:
+            os.environ.pop("TZ", None)
+        else:
+            os.environ["TZ"] = self._tz
+        time.tzset()
+
+    def test_the_apps_schedule(self):
+        self.assertEqual(explain._utc_minutes_local(615), "03:15")
+        self.assertEqual(explain._utc_minutes_local(615 + 225), "07:00")
+
+    def test_wraps_past_midnight(self):
+        self.assertEqual(explain._utc_minutes_local(60), "18:00")

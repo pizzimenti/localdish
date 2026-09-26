@@ -53,7 +53,7 @@ CONTROLS: list[Control] = [
             "change the power-save schedule? while the dish sleeps there is no internet.",
             [{"name": "enabled", "type": "bool", "label": "power save on"},
              {"name": "start_minutes", "type": "int", "min": 0, "max": 1439,
-              "label": "starts (the dish's local time)"},
+              "label": "starts"},
              {"name": "duration_minutes", "type": "int", "min": 1, "max": 1440, "label": "lasts, minutes"}]),
     Control("share_location", "share location", "settings", "dish", "dish_set_config",
             "change whether devices on your network may read the dish's location?",

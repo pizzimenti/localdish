@@ -41,6 +41,9 @@
   function fmtAgo(s) { return !isNum(s) ? "" : s < 1.5 ? "just now" : fmtDur(s) + " ago"; }
   function clock(unix) { if (!isNum(unix)) return "—"; const d = new Date(unix * 1000); return pad(d.getHours()) + ":" + pad(d.getMinutes()) + ":" + pad(d.getSeconds()); }
   function clockMin(m) { m = ((m % 1440) + 1440) % 1440; return pad(Math.floor(m / 60)) + ":" + pad(m % 60); }
+  // the dish keeps its power-save schedule in minutes after midnight UTC; people think in their own clock
+  function utcToLocalMin(m) { const d = new Date(); d.setUTCHours(Math.floor(m / 60) % 24, m % 60, 0, 0); return d.getHours() * 60 + d.getMinutes(); }
+  function localToUtcMin(m) { const d = new Date(); d.setHours(Math.floor(m / 60) % 24, m % 60, 0, 0); return d.getUTCHours() * 60 + d.getUTCMinutes(); }
   function deg(v, digits) { return isNum(v) ? v.toFixed(digits === undefined ? 0 : digits) + "°" : "—"; }
 
   // a response body may arrive wrapped ({"device_info": {...}}) or bare; take the inner one when it is there
@@ -586,7 +589,7 @@
     if (v === undefined || v === null) return "—";
     if (p.type === "bool") return v ? "on" : "off";
     if (isChoice(p)) return words(v);
-    if (isClock(p)) return clockMin(v);
+    if (isClock(p)) return clockMin(utcToLocalMin(v));
     if (/_minutes$/.test(p.name)) return fmtDur(v * 60);
     return String(v);
   }
@@ -630,7 +633,7 @@
       const { p, el } = ctl.inputs[k], v = cur[k];
       if (v === undefined) continue;
       if (p.type === "bool") el.checked = !!v;
-      else if (isClock(p)) el.value = clockMin(v);
+      else if (isClock(p)) el.value = clockMin(utcToLocalMin(v));
       else el.value = String(v);
     }
     ctl.hints.forEach((f) => f());
@@ -646,7 +649,7 @@
       else if (isClock(p)) {
         const m = /^(\d{1,2}):(\d{2})/.exec(el.value);
         if (!m) throw new Error((p.label || words(k)) + ": pick a time");
-        out[k] = parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
+        out[k] = localToUtcMin(parseInt(m[1], 10) * 60 + parseInt(m[2], 10));
       } else {
         const n = Number(el.value);
         if (el.value === "" || !Number.isInteger(n)) throw new Error((p.label || words(k)) + ": a whole number, please");

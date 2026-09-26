@@ -176,8 +176,9 @@ Controls for 0.1 (requests verified against a Mini's schema; each one's live eff
 | `speedtest` | tests | router → `start_speedtest {}`, then `get_speedtest_status {}` | — |
 | `ping` | tests | router → `get_ping {}` | — |
 
-Schedule minutes are in the dish's local day (a Mini reported update hour 3 and scheduled its reboot at 03:54 local).
-The page shows them as clock times.
+**Power-save minutes are minutes after midnight UTC.** Checked against the Starlink app: a Mini with start 615 and 225 min
+was shown as sleep 3:15 AM, wake 7:00 AM in UTC−7. localdish shows them on this computer's clock and converts back when
+sending. `swupdate_reboot_hour` looks like local time (hour 3 → a reboot scheduled at 03:54 PDT), but that is unverified.
 
 ### explain.py (J4), pure functions of decoded dicts
 
