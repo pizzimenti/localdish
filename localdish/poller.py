@@ -289,8 +289,21 @@ class Poller:
             except OSError as e:
                 self._seen(target, False, e)
                 raise
+            except (ValueError, KeyError) as e:
+                self._seen(target, True, None)
+                raise self._codec_error(target, op, e) from e
             self._seen(target, True, None)
             return resp
+
+    def _codec_error(self, target: str, op: str, exc: BaseException) -> GrpcError:
+        """The codec refuses an op this firmware's schema lacks (that is UNIMPLEMENTED), or a reply it can't read."""
+        try:
+            known = op in self.devices[target].schema.fields("SpaceX.API.Device.Request")
+        except Exception:
+            known = True
+        if not known:
+            return GrpcError(12, f"this {target}'s firmware has no {op}")
+        return GrpcError(13, f"could not read the {target}'s reply to {op}: {exc}")
 
     def _count(self, target: str, op: str) -> None:
         now = self.clock()
@@ -310,10 +323,12 @@ class Poller:
             self.event(target, f"{target} reachable at {host}")
         elif not reachable and was is not False:
             self.event(target, f"{target} unreachable at {host}: {describe(exc)}")
-        schema = getattr(self.devices[target], "schema", None)
-        if schema is not None and schema is not self._schema.get(target):
+        dev = self.devices[target]
+        schema = getattr(dev, "schema", None)
+        mark = getattr(dev, "schema_loaded", None) or schema     # Device stamps each (re)load
+        if schema is not None and mark is not self._schema.get(target) and mark != self._schema.get(target):
             first = target not in self._schema
-            self._schema[target] = schema
+            self._schema[target] = mark
             self.event(target, f"{target} schema loaded" if first else f"{target} schema reloaded")
 
     def _store(self, target: str, op: str, resp: dict) -> None:

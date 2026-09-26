@@ -315,6 +315,37 @@ class SpeedtestTest(unittest.TestCase):
         self.assertLessEqual(rtr.ops().count("get_speedtest_status"), 91)
 
 
+class CodecErrorTest(unittest.TestCase):
+    class Schema:
+        def fields(self, message):
+            return {"get_status": None, "reboot": None}
+
+    def test_an_op_the_firmware_lacks_is_unimplemented(self):
+        p, dish, _, _ = make({"reboot": ValueError("unknown field dish_stow")})
+        dish.schema = self.Schema()
+        dish.answers["dish_stow"] = ValueError("unknown field dish_stow")
+        p.device.available = lambda name, state: (True, None)
+        self.assertEqual(p.control("stow", {}), (502, {"ok": False, "error": "this dish's firmware has no dish_stow"}))
+        self.assertEqual(p.control("stow", {})[0], 409)
+
+    def test_an_unreadable_reply_is_an_error_not_a_crash(self):
+        p, dish, _, _ = make({"get_status": ValueError("truncated varint")})
+        dish.schema = self.Schema()
+        p.run_job("status")
+        line = p.state()["localdish"]["dish"]
+        self.assertTrue(line["reachable"])
+        self.assertEqual(line["error"], "INTERNAL: could not read the dish's reply to get_status: truncated varint")
+
+    def test_schema_reload_logged_from_the_stamp(self):
+        p, dish, _, _ = make()
+        dish.schema_loaded = 1.0
+        p.run_job("status")
+        dish.schema_loaded = 2.0
+        p.run_job("info")
+        texts = [e["text"] for e in p.events()]
+        self.assertEqual((texts.count("dish schema loaded"), texts.count("dish schema reloaded")), (1, 1))
+
+
 class HelpersTest(unittest.TestCase):
     def test_body_and_status_check(self):
         self.assertEqual(poller.body({"api_version": 42, "dish_get_status": {"a": 1}}), {"a": 1})
