@@ -174,6 +174,11 @@ class Server(ThreadingHTTPServer):
         self.poller = poller
         super().__init__(address, Handler)
 
+    def handle_error(self, request, client_address):
+        if isinstance(sys.exc_info()[1], ConnectionError):    # a tab closed mid-reply: not worth a traceback
+            return
+        super().handle_error(request, client_address)
+
 
 def make_server(poller, host: str = "127.0.0.1", port: int = 8686) -> Server:
     return Server((host, port), poller)
