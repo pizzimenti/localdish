@@ -1,6 +1,8 @@
 # changelog
 
 ## unreleased
+- a software section: dish and router firmware, the update in words, and **install update now** when one is waiting
+  (a restart, as the Starlink app does it).
 - the power-save schedule is read as UTC minutes (checked against the Starlink app) and shown on your own clock.
 - the first version: a local page for a Starlink dish and its router — status, the 15-minute graphs, the obstruction
   map, wifi clients, an aim helper for dishes without motors, and a few controls behind confirms.

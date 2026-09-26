@@ -114,10 +114,10 @@ class BuildTest(unittest.TestCase):
 
     def test_controls_table(self):
         self.assertEqual([c.name for c in device.CONTROLS],
-                         ["restart", "snow_melt", "power_save", "share_location", "clear_obstructions", "stow",
-                          "speedtest", "ping"])
+                         ["restart", "install_update", "snow_melt", "power_save", "share_location", "clear_obstructions",
+                          "stow", "speedtest", "ping"])
         for c in device.CONTROLS:
-            self.assertIn(c.group, ("restart", "settings", "maintenance", "tests"))
+            self.assertIn(c.group, ("software", "settings", "maintenance", "tests"))
             self.assertEqual(c.confirm, c.confirm.lower(), c.name)
             self.assertEqual(c.label, c.label.lower(), c.name)
 
@@ -184,3 +184,22 @@ class CurrentTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+
+class InstallUpdateTest(unittest.TestCase):
+    """The app's "update" on a downloaded update is a restart; the button shows only while one is waiting."""
+
+    def state(self, status):
+        return {"dish": {"status": status}, "localdish": {"dish": {"reachable": True}}}
+
+    def test_waiting_on_the_mini_fixture(self):
+        m = json.load(open(os.path.join(os.path.dirname(__file__), "..", "localdish", "demo", "mini.json")))
+        st = m["dish"]["get_status"]["dish_get_status"]
+        self.assertEqual(device.available("install_update", self.state(st)), (True, None))
+        self.assertEqual(device.build("install_update", {}), ("dish", "reboot", {}))
+
+    def test_not_waiting(self):
+        st = {"software_update_stats": {"software_update_state": "IDLE"}}
+        self.assertEqual(device.available("install_update", self.state(st)), (False, "no update is waiting"))
+        self.assertEqual(device.available("install_update", self.state(None))[0], False)

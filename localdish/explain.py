@@ -336,6 +336,49 @@ def aim(status: dict) -> dict | None:
     return out
 
 
+# ---- software ----------------------------------------------------------------------------------------------------
+
+SOFTWARE_TEXT = {
+    "IDLE": "up to date",
+    "FETCHING": "downloading an update",
+    "PRE_CHECK": "checking the update",
+    "WRITING": "installing the update",
+    "POST_CHECK": "checking the installed update",
+    "REBOOT_REQUIRED": "update ready — restart to install",
+    "DISABLED": "updates are off",
+    "FAULTED": "the update failed",
+}
+ROUTER_SOFTWARE_TEXT = {"IDLE": "up to date", "REBOOT_PENDING": "update ready — installs with the next restart"}
+
+
+def software(state: dict) -> dict:
+    """The software card: both firmware versions, the update in words, and whether one is waiting."""
+    state = _dict(state)
+    dish, router = _dict(state.get("dish")), state.get("router")
+    status = _dict(dish.get("status"))
+    info = _body(dish, "device_info", "device_info") or _dict(status.get("device_info"))
+    config = _body(dish, "config", "dish_config") or _dict(status.get("config"))
+    u = _update(status) if status else None
+    known = u and u["state"] != "SOFTWARE_UPDATE_STATE_UNKNOWN"
+    out = {"dish": {"version": info.get("software_version"),
+                    "state": u["state"] if known else None,
+                    "text": (SOFTWARE_TEXT.get(u["state"], _words(u["state"])) if known else None),
+                    "progress": u["progress"] if u and u["state"] in ("FETCHING", "WRITING") else None,
+                    "restart_at": u["at"] if u else None},
+           "router": None,
+           "update_hour": int(config["swupdate_reboot_hour"]) if "swupdate_reboot_hour" in config else None,
+           "update_waiting": bool(u and u["pending"])}
+    if isinstance(router, dict):
+        rstatus = _dict(router.get("status"))
+        rinfo = _body(router, "device_info", "device_info") or _dict(rstatus.get("device_info"))
+        rstats = _dict(rstatus.get("software_update_stats"))
+        rstate = rstats.get("state")
+        out["router"] = {"version": rinfo.get("software_version") or rstats.get("running_version"),
+                         "state": rstate,
+                         "text": ROUTER_SOFTWARE_TEXT.get(rstate, _words(rstate)) if rstate else None}
+    return out
+
+
 # ---- facts -----------------------------------------------------------------------------------------------------
 
 def facts(state: dict) -> list[list]:
@@ -442,4 +485,4 @@ def explain(state: dict, now_unix: float) -> dict:
             pointed["held_s"] = age
             pointed["text"] = pointed["text"] + [f"as of {_duration(age)} ago — the dish isn't saying right now"]
     return {"headline": headline(status, error), "alerts": alerts(status or {}),
-            "aim": pointed, "facts": facts(state)}
+            "aim": pointed, "facts": facts(state), "software": software(state)}

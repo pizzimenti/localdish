@@ -34,7 +34,7 @@ def read(dev, name: str) -> dict:
 class Control(NamedTuple):
     name: str
     label: str
-    group: str          # "restart" | "settings" | "maintenance" | "tests"
+    group: str          # "software" | "settings" | "maintenance" | "tests"
     target: str         # "dish" | "router"
     op: str
     confirm: str        # the question the page asks before sending
@@ -44,8 +44,13 @@ class Control(NamedTuple):
 SNOW_MELT_MODES = ["AUTO", "ALWAYS_ON", "ALWAYS_OFF"]
 
 CONTROLS: list[Control] = [
-    Control("restart", "restart dish", "restart", "dish", "reboot",
+    Control("restart", "restart", "software", "dish", "reboot",
             "restart the dish? the internet drops while it boots, usually a minute or two.", []),
+    # the Starlink app's "update" on a downloaded update is a restart that installs it; the dish's own `update` request
+    # is not used: its effect has not been verified
+    Control("install_update", "install update now", "software", "dish", "reboot",
+            "install the waiting update now? the dish restarts to install it — on a mini the wifi goes down too — and the "
+            "internet is gone for a few minutes.", []),
     Control("snow_melt", "snow melt", "settings", "dish", "dish_set_config",
             "change the dish's snow melt setting?",
             [{"name": "mode", "type": "choice", "choices": SNOW_MELT_MODES, "label": "snow melt"}]),
@@ -182,6 +187,14 @@ def available(name: str, state: dict) -> tuple[bool, str | None]:
             return False, "waiting for the dish's status"
         if _has_actuators(status) != "HAS_ACTUATORS_YES":
             return False, "this dish has no motors"
+    if name == "install_update":
+        status = _section(state, "dish").get("status")
+        stats = (status or {}).get("software_update_stats") or {} if isinstance(status, dict) else {}
+        waiting = isinstance(status, dict) and (
+            (stats.get("software_update_state") or status.get("software_update_state")) == "REBOOT_REQUIRED"
+            or bool(stats.get("update_requires_reboot")))
+        if not waiting:
+            return False, "no update is waiting"
     if name == "speedtest":
         running = ((state.get("running") or {}).get("speedtest")) if isinstance(state, dict) else None
         if running and not running.get("done"):

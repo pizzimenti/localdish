@@ -574,7 +574,7 @@
 
   // ---- controls ------------------------------------------------------------------------------------------------
 
-  const GROUPS = ["restart", "settings", "maintenance", "tests"];
+  const GROUPS = ["software", "settings", "maintenance", "tests"];
   const ctls = {};
   let pending = null;
 
@@ -677,7 +677,7 @@
     ctl.now = node("div", "control-now");
     ctl.root.append(title, ctl.now);
     for (const p of c.params || []) ctl.root.append(paramInput(ctl, p));
-    ctl.btn = node("button", "btn " + (c.group === "restart" || c.group === "maintenance" ? "danger" : "primary"),
+    ctl.btn = node("button", "btn " + (c.group === "software" || c.group === "maintenance" ? "danger" : "primary"),
       (c.params || []).length ? "apply" : c.group === "tests" ? "run" : (c.label || words(c.name)).split(" ")[0]);
     ctl.btn.type = "button";
     ctl.btn.addEventListener("click", () => ask(ctl));
@@ -741,7 +741,7 @@
     $("confirm-title").textContent = c.label || words(c.name);
     $("confirm-text").textContent = c.confirm || "send this to the " + (c.target || "device") + "?";
     $("confirm-params").replaceChildren(...(c.params || []).map((p) => node("li", null, labelOf(p) + ": " + showParam(p, params[p.name]))));
-    $("confirm-ok").className = "btn " + (c.group === "restart" || c.group === "maintenance" ? "danger" : "primary");
+    $("confirm-ok").className = "btn " + (c.group === "software" || c.group === "maintenance" ? "danger" : "primary");
     $("confirm").returnValue = "";
     $("confirm").showModal();
   }

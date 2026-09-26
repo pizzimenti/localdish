@@ -321,7 +321,7 @@ class FactsTest(unittest.TestCase):
 class ExplainTest(unittest.TestCase):
     def test_mini(self):
         out = explain.explain(mini_state(), 1790410225.44)
-        self.assertEqual(set(out), {"headline", "alerts", "aim", "facts"})
+        self.assertEqual(set(out), {"headline", "alerts", "aim", "facts", "software"})
         self.assertEqual(out["headline"]["text"], "online")
         self.assertEqual(out["alerts"][0]["name"], "install_pending")
         json.dumps(out, allow_nan=False)
@@ -388,3 +388,30 @@ class ScheduleClockTest(unittest.TestCase):
 
     def test_wraps_past_midnight(self):
         self.assertEqual(explain._utc_minutes_local(60), "18:00")
+
+
+
+class SoftwareTest(unittest.TestCase):
+    def test_the_mini(self):
+        m = json.load(open(os.path.join(os.path.dirname(__file__), "..", "localdish", "demo", "mini.json")))
+        state = {"dish": {"status": m["dish"]["get_status"]["dish_get_status"],
+                          "device_info": m["dish"]["get_device_info"]["get_device_info"],
+                          "config": m["dish"]["dish_get_config"]["dish_get_config"]},
+                 "router": {"status": m["router"]["get_status"]["wifi_get_status"],
+                            "device_info": m["router"]["get_device_info"]["get_device_info"]}}
+        s = explain.software(state)
+        self.assertEqual(s["dish"]["version"], "2026.05.13.mr80201")
+        self.assertEqual(s["dish"]["state"], "REBOOT_REQUIRED")
+        self.assertEqual(s["dish"]["text"], "update ready — restart to install")
+        self.assertIsNone(s["dish"]["progress"])
+        self.assertTrue(s["dish"]["restart_at"])
+        self.assertEqual(s["router"]["version"], "2026.05.08.mr76937")
+        self.assertEqual(s["router"]["text"], "update ready — installs with the next restart")
+        self.assertEqual(s["update_hour"], 3)
+        self.assertTrue(s["update_waiting"])
+
+    def test_downloading_shows_progress_and_no_router(self):
+        s = explain.software({"dish": {"status": {"software_update_stats": {
+            "software_update_state": "FETCHING", "software_update_progress": 0.4}}}, "router": None})
+        self.assertEqual((s["dish"]["text"], s["dish"]["progress"], s["router"], s["update_waiting"]),
+                         ("downloading an update", 0.4, None, False))
