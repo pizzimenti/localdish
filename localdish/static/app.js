@@ -366,7 +366,7 @@
       if (opts.area && first !== null) area = '<path class="area" d="' + d + "L" + last + " " + (T + ph) + "L" + first + " " + (T + ph) + 'Z" style="fill:' + s.colour + '"/>';
       svg += area + '<path class="line" d="' + d + '" style="stroke:' + s.colour + '"/>';
     }
-    if (peak !== null) svg += '<text class="tick" x="' + (W - R) + '" y="' + (T + 9) + '" text-anchor="end">peaks to ' + esc(opts.tick(peak)) + " cut off</text>";
+    if (peak !== null) svg += '<text class="tick" x="' + (L + 6) + '" y="' + (T + 9) + '">peaks to ' + esc(opts.tick(peak)) + " cut off</text>";
     box.innerHTML = head + svg + "</svg>";
   }
 
@@ -396,7 +396,7 @@
     const recent = all.filter((o) => o.ago_s + since <= 900);
     const down = recent.reduce((t, o) => t + (o.duration_s || 0), 0);
     $("outages-summary").textContent = !all.length ? "" :
-      recent.length + " in the last 15 min (" + fmtDur(down) + " without internet) · " + all.length + " on record";
+      (recent.length ? recent.length + " in the last 15 min (" + fmtDur(down) + " without internet)" : "none in the last 15 min") + " · " + all.length + " on record";
     const shown = showAllOutages ? all : all.slice(0, OUTAGES_SHOWN);
     const list = $("outages");
     if (!all.length) { list.replaceChildren(node("li", "empty", H ? "no outages on record" : "waiting for history")); }
@@ -656,21 +656,21 @@
     renderSpeedtest();
   }
 
+  // running.speedtest = {started, status: {status: {running, up: {throughputs_mbps[], err}, down: {…}}}, done, error}
   function renderSpeedtest() {
     const ctl = ctls.speedtest, run = S.running && S.running.speedtest;
     if (!ctl || !run || ctl.busy) return;
     const secs = isNum(S.localdish && S.localdish.now) && isNum(run.started) ? S.localdish.now - run.started : null;
-    const nums = [];
-    (function walk(o, path) {
-      if (nums.length >= 6 || !o || typeof o !== "object") return;
-      for (const k in o) {
-        const v = o[k];
-        if (isNum(v)) nums.push(words(path.concat(k).join(" ")) + " " + (Math.abs(v) < 1e4 ? +v.toFixed(2) : Math.round(v)));
-        else if (v && typeof v === "object" && !Array.isArray(v)) walk(v, path.concat(k));
-      }
-    })(run.status, []);
-    ctl.result.className = "result " + (run.done ? "t-ok" : "muted");
-    ctl.result.textContent = (run.done ? "finished" : "running" + (secs !== null ? ", " + fmtDur(secs) : "")) + (nums.length ? ": " + nums.join(" · ") : "");
+    const st = inner(run.status, "status") || {};
+    const parts = [];
+    for (const dir of ["down", "up"]) {
+      const d = st[dir] || {}, t = Array.isArray(d.throughputs_mbps) ? d.throughputs_mbps.filter(isNum) : [];
+      if (t.length) parts.push(dir + " " + t[t.length - 1].toFixed(1) + " Mb/s");
+      if (d.err) parts.push(dir + ": " + words(d.err));
+    }
+    if (run.error) parts.push(run.error);
+    ctl.result.className = "result " + (run.error ? "t-bad" : run.done ? "t-ok" : "muted");
+    ctl.result.textContent = (run.done ? "finished" : "running" + (secs !== null ? ", " + fmtDur(secs) : "")) + (parts.length ? ": " + parts.join(" · ") : "");
   }
 
   function ask(ctl) {
