@@ -31,6 +31,9 @@ READS = {
         "explain.aim.az_now", "explain.aim.az_want", "explain.aim.el_now", "explain.aim.el_want",
         "explain.aim.turn_deg?", "explain.aim.ok?", "explain.aim.text", "explain.aim.confidence",
         "explain.aim.uncertainty_deg?", "explain.aim.held_s~", "explain.facts",
+        "explain.software.dish.version?", "explain.software.dish.state?", "explain.software.dish.text?",
+        "explain.software.dish.progress?", "explain.software.dish.restart_at?", "explain.software.router?",
+        "explain.software.update_hour?", "explain.software.update_waiting",
         "controls[].name", "controls[].label", "controls[].group", "controls[].confirm", "controls[].params",
         "controls[].available", "controls[].reason?", "controls[].current",
         "running.speedtest?",
@@ -150,6 +153,68 @@ class TestStaticFiles(unittest.TestCase):
         self.assertIn("visibilitychange", js)
 
 
+class TestSettingsLikeTheApp(unittest.TestCase):
+    """Each control has a home like the Starlink app's; the sleep schedule is clock times, never minutes."""
+
+    def block(self, section_id: str) -> str:
+        html = text("index.html")
+        start = html.index(f'id="{section_id}"')
+        return html[start:html.index("</section>", start)]
+
+    def test_the_new_homes_exist(self):
+        ids = set(re.findall(r'\bid="([^"]+)"', text("index.html")))
+        for want in ("software-card", "sw-dish-version", "sw-dish-state", "sw-dish-progress", "sw-dish-restart",
+                     "sw-router-version", "sw-hour", "software-actions", "map-actions", "tests-actions",
+                     "speedtest-down", "speedtest-up", "sleep-card", "sleep-enabled", "sleep-at", "wake-at",
+                     "sleep-dial", "sleep-save", "snow-modes", "snow-save", "share-location", "other-card", "controls"):
+            self.assertIn(want, ids)
+        self.assertNotIn("controls-card", ids)            # the old generic grid is gone; "other" keeps the rest
+
+    def test_software_card_reads_explain_software(self):
+        js = text("app.js")
+        self.assertIn("S.explain && S.explain.software", js)
+        for field in ("version", "text", "progress", "restart_at", "update_hour"):
+            self.assertRegex(js, r"\b(d|r|sw)\." + field + r"\b", field)
+
+    def test_every_control_in_the_example_has_a_place(self):
+        js = text("app.js")
+        places = js[js.index("const PLACES = {"):]
+        places = set(re.findall(r"^    (\w+): ", places[:places.index("\n  };")], re.M))
+        self.assertEqual(places, {"install_update", "restart", "clear_obstructions", "speedtest", "ping",
+                                  "power_save", "snow_melt", "share_location"})
+        listed = {c["name"] for c in api("state")["controls"]}
+        self.assertEqual(listed - places, {"stow"})     # drawn from its params under "other"
+        self.assertIn("genericCtl(c)", js)
+
+    def test_sleep_schedule_is_clock_times_not_minutes(self):
+        sleep = self.block("sleep-card")
+        self.assertNotIn('type="number"', sleep)
+        self.assertIn('id="sleep-input" type="time"', sleep)
+        js = text("app.js")
+        self.assertNotIn("_minutes$", js)                 # no control param is drawn as a raw count of minutes
+        self.assertIn("utcToLocalMin(cur.start_minutes)", js)          # read: UTC minutes → this computer's clock
+        self.assertIn("start_minutes: localToUtcMin(d.sleep)", js)     # save: back to UTC
+        self.assertIn("duration_minutes: len ||", js)
+        self.assertIn("const asleepFor = (d) => dayMin(d.wake - d.sleep)", js)
+        self.assertIn('hour: "numeric", minute: "2-digit"', js)          # the browser's own 12/24-hour style
+
+    def test_saves_start_disabled(self):
+        html = text("index.html")
+        for save in ("sleep-save", "snow-save"):
+            self.assertRegex(html, r'<button id="%s"[^>]*\bdisabled\b' % save)
+
+    def test_dial_is_dragged_with_pointer_events_in_five_minute_steps(self):
+        js = text("app.js")
+        for ev in ("pointerdown", "pointermove", "pointerup", "setPointerCapture"):
+            self.assertIn(ev, js)
+        self.assertRegex(js, r"step:\s*5\b")
+
+    def test_snow_melt_offers_the_apps_three_choices(self):
+        js = text("app.js")
+        for mode, label in (("AUTO", "automatic"), ("ALWAYS_ON", "pre-heat"), ("ALWAYS_OFF", "off")):
+            self.assertRegex(js, r'%s: \["%s"' % (mode, label))
+
+
 class TestExampleReplies(unittest.TestCase):
     def test_replies_parse_and_carry_what_the_page_reads(self):
         for name, paths in READS.items():
@@ -173,7 +238,7 @@ class TestExampleReplies(unittest.TestCase):
 
     def test_control_params_are_ones_the_page_can_draw(self):
         for c in api("state")["controls"]:
-            self.assertIn(c["group"], ("restart", "settings", "maintenance", "tests"), c["name"])
+            self.assertIn(c["group"], ("software", "settings", "maintenance", "tests"), c["name"])
             for p in c["params"]:
                 self.assertIn(p["type"], PARAM_TYPES, f"{c['name']}.{p['name']}")
                 if p["type"] in ("choice", "enum"):

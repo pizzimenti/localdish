@@ -33,6 +33,33 @@
 
   <section id="live" class="metrics" aria-label="live"></section>
 
+  <section id="software-card" class="card">
+    <div class="card-head wrap">
+      <div><p class="eyebrow">firmware and updates</p><h2>software</h2></div>
+      <div id="software-actions" class="actions"></div>
+    </div>
+    <div class="software">
+      <div class="sw-item">
+        <p class="eyebrow">dish</p>
+        <p id="sw-dish-version" class="sw-version mono">—</p>
+        <p id="sw-dish-state" class="sw-state"></p>
+        <progress id="sw-dish-progress" max="1" value="0" hidden></progress>
+        <p id="sw-dish-restart" class="sw-note" hidden></p>
+      </div>
+      <div id="sw-router" class="sw-item" hidden>
+        <p class="eyebrow">router</p>
+        <p id="sw-router-version" class="sw-version mono">—</p>
+        <p id="sw-router-state" class="sw-state"></p>
+      </div>
+      <div class="sw-item">
+        <p class="eyebrow">update hour</p>
+        <p id="sw-hour" class="sw-version">—</p>
+        <p class="sw-note">when the dish installs updates on its own</p>
+      </div>
+    </div>
+    <div id="software-notes" class="notes"></div>
+  </section>
+
   <section id="aim-card" class="card" hidden>
     <div class="card-head">
       <div><p class="eyebrow">aim</p><h2>pointing the dish</h2></div>
@@ -87,6 +114,7 @@
         <div class="top-meta">
           <span id="map-age" class="age"></span>
           <button id="map-refresh" class="btn small" type="button">refresh</button>
+          <span id="map-actions" class="actions"></span>
         </div>
       </div>
       <div class="map-wrap">
@@ -97,6 +125,7 @@
           <span><i class="k-empty"></i>no data yet</span>
         </div>
         <p id="map-note" class="summary num"></p>
+        <div id="map-notes" class="notes"></div>
       </div>
     </section>
   </div>
@@ -115,8 +144,21 @@
   </section>
 
   <section id="ping-card" class="card" hidden>
-    <div class="card-head">
-      <div><p class="eyebrow">router</p><h2>ping test</h2></div>
+    <div class="card-head wrap">
+      <div><p class="eyebrow">router</p><h2>tests</h2></div>
+      <div id="tests-actions" class="actions"></div>
+    </div>
+    <div id="tests-notes" class="notes"></div>
+    <div id="speedtest" class="speedtest" hidden>
+      <p class="eyebrow">speed test</p>
+      <div class="speedtest-nums num">
+        <span><b id="speedtest-down">—</b> <small>Mb/s down</small></span>
+        <span><b id="speedtest-up">—</b> <small>Mb/s up</small></span>
+      </div>
+      <p id="speedtest-note" class="summary"></p>
+    </div>
+    <div class="ping-head">
+      <p class="eyebrow">ping</p>
       <span id="ping-age" class="age"></span>
     </div>
     <p id="ping-summary" class="summary num"></p>
@@ -129,8 +171,66 @@
     <button id="ping-more" class="link-btn" type="button" hidden>show all</button>
   </section>
 
-  <section id="controls-card" class="card">
-    <div class="card-head"><div><p class="eyebrow">ask the gear to act</p><h2>controls</h2></div></div>
+  <div class="grid-2">
+    <section id="sleep-card" class="card" hidden>
+      <div class="card-head"><div><p class="eyebrow">dish settings</p><h2>sleep schedule</h2></div></div>
+      <p class="lede">save power by putting the dish to sleep on a schedule. while it sleeps it gives no internet and melts no snow.</p>
+      <label class="toggle row">
+        <span>enable sleep schedule</span>
+        <input id="sleep-enabled" type="checkbox">
+        <span class="track"></span>
+      </label>
+      <div id="sleep-body" class="sleep">
+        <div class="sleep-times">
+          <div class="sleep-time">
+            <span class="sleep-label">sleep</span>
+            <button id="sleep-at" class="sleep-clock num" type="button" aria-label="sleep time, change">—</button>
+            <input id="sleep-input" type="time" step="300" aria-label="sleep time" hidden>
+          </div>
+          <div class="sleep-time">
+            <span class="sleep-label">wake</span>
+            <button id="wake-at" class="sleep-clock num" type="button" aria-label="wake time, change">—</button>
+            <input id="wake-input" type="time" step="300" aria-label="wake time" hidden>
+          </div>
+        </div>
+        <div id="sleep-dial" class="dial"></div>
+      </div>
+      <p class="callout">snow that settles may take several hours to melt after the dish wakes, and you may need to clear it off before service comes back.</p>
+      <div class="save-row">
+        <button id="sleep-undo" class="link-btn" type="button" hidden>undo changes</button>
+        <button id="sleep-save" class="btn primary wide" type="button" disabled>save</button>
+      </div>
+      <div id="sleep-notes" class="notes"></div>
+    </section>
+
+    <div class="stack">
+      <section id="settings-card" class="card" hidden>
+        <div class="card-head"><div><p class="eyebrow">dish settings</p><h2>snow melt</h2></div></div>
+        <div id="snow-block" class="setting" hidden>
+          <div id="snow-modes" class="segmented" role="radiogroup" aria-label="snow melt"></div>
+          <p id="snow-hint" class="setting-hint"></p>
+          <div class="save-row">
+            <button id="snow-save" class="btn primary" type="button" disabled>save</button>
+          </div>
+          <div id="snow-notes" class="notes"></div>
+        </div>
+      </section>
+
+      <section id="share-block" class="card slim" hidden>
+        <p class="eyebrow">advanced</p>
+        <label class="toggle row">
+          <span>let devices on this wifi read the dish's gps position</span>
+          <input id="share-location" type="checkbox">
+          <span class="track"></span>
+        </label>
+        <p class="setting-hint">off by default. when on, any device on the dish's wifi can ask for its exact location, and localdish shows your coordinates. it sends nothing anywhere — starlink already knows where the dish is.</p>
+        <div id="share-notes" class="notes"></div>
+      </section>
+    </div>
+  </div>
+
+  <section id="other-card" class="card" hidden>
+    <div class="card-head"><div><p class="eyebrow">more the gear can do</p><h2>other</h2></div></div>
     <div id="controls" class="controls"></div>
   </section>
 

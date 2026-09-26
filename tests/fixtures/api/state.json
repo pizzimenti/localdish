@@ -1,20 +1,20 @@
 {
  "localdish": {
-  "version": "0.1.0",
-  "now": 1790410265.44,
+  "version": "0.1.0.dev0",
+  "now": 1790414562.154623,
   "demo": true,
   "dish": {
-   "host": "192.168.100.1",
+   "host": "demo",
    "reachable": true,
    "error": null,
-   "age_s": 0.4,
+   "age_s": 0.6,
    "schema": true
   },
   "router": {
-   "host": "192.168.1.1",
+   "host": "demo",
    "reachable": true,
    "error": null,
-   "age_s": 12.1,
+   "age_s": 5.6,
    "schema": true
   }
  },
@@ -69,11 +69,11 @@
     "utc_offset_s": -28800
    },
    "device_state": {
-    "uptime_s": 11310
+    "uptime_s": 11355
    },
    "disablement_code": "OKAY",
    "dl_bandwidth_restricted_reason": "NO_LIMIT",
-   "downlink_throughput_bps": 608174.06,
+   "downlink_throughput_bps": 608690.7638570311,
    "downstream_routers": {
     "Router-000000000000000000000001": {
      "last_seen": 1790410220006847410,
@@ -121,7 +121,7 @@
     "port_2_stats": {},
     "port_3_stats": {}
    },
-   "pop_ping_latency_ms": 19.449392,
+   "pop_ping_latency_ms": 18.355455969587304,
    "ready_states": {
     "aap": true,
     "l1l2": true,
@@ -139,7 +139,7 @@
     "update_requires_reboot": true
    },
    "ul_bandwidth_restricted_reason": "NO_LIMIT",
-   "uplink_throughput_bps": 270406.78,
+   "uplink_throughput_bps": 273344.10312655906,
    "upsu_stats": {}
   },
   "device_info": {
@@ -192,7 +192,131 @@
    "utc_offset_s": -28800
   },
   "location": null,
-  "location_error": "PERMISSION_DENIED: GetLocation requests disabled due to policy"
+  "location_error": "PERMISSION_DENIED: GetLocation requests disabled due to policy",
+  "aim_status": {
+   "account_shard": "account_shard-demo-1",
+   "alerts": {
+    "install_pending": true
+   },
+   "alignment_stats": {
+    "attitude_estimation_state": "FILTER_CONVERGED",
+    "attitude_uncertainty_deg": 0.72698814,
+    "boresight_azimuth_deg": -7.144536,
+    "boresight_elevation_deg": 68.42079,
+    "desired_boresight_azimuth_deg": -17.962452,
+    "desired_boresight_elevation_deg": 67.98934,
+    "has_actuators": "HAS_ACTUATORS_NO",
+    "tilt_angle_deg": 23.521
+   },
+   "aps_stats": {},
+   "battery_stats": {},
+   "boresight_azimuth_deg": -7.144536,
+   "boresight_elevation_deg": 68.42079,
+   "class_of_service": "CONSUMER",
+   "config": {
+    "apply_asset_class": true,
+    "apply_level_dish_mode": true,
+    "apply_location_request_mode": true,
+    "apply_power_save_duration_minutes": true,
+    "apply_power_save_mode": true,
+    "apply_power_save_start_minutes": true,
+    "apply_snow_melt_mode": true,
+    "apply_swupdate_reboot_hour": true,
+    "apply_swupdate_three_day_deferral_enabled": true,
+    "power_save_duration_minutes": 240,
+    "power_save_mode": true,
+    "power_save_start_minutes": 540,
+    "snow_melt_mode": "ALWAYS_OFF",
+    "swupdate_reboot_hour": 3
+   },
+   "connected_routers": [
+    "Router-000000000000000000000001"
+   ],
+   "device_info": {
+    "bootcount": 3,
+    "build_id": "5c0319fb-fd2f-49fe-ae51-ca0ba981305f.uterm_catapult_manifest.release",
+    "country_code": "US",
+    "generation_number": 1779130246,
+    "hardware_version": "mini1_pez_proto1",
+    "id": "id-demo-1",
+    "software_version": "2026.05.13.mr80201",
+    "utc_offset_s": -28800
+   },
+   "device_state": {
+    "uptime_s": 11355
+   },
+   "disablement_code": "OKAY",
+   "dl_bandwidth_restricted_reason": "NO_LIMIT",
+   "downlink_throughput_bps": 608690.7638570311,
+   "downstream_routers": {
+    "Router-000000000000000000000001": {
+     "last_seen": 1790410220006847410,
+     "role": "CONTROLLER"
+    }
+   },
+   "eth_speed_mbps": 1000,
+   "gps_stats": {
+    "gps_sats": 21,
+    "gps_valid": true
+   },
+   "has_actuators": "HAS_ACTUATORS_NO",
+   "has_signed_cals": true,
+   "initialization_duration_seconds": {
+    "attitude_initialization": 124,
+    "burst_detected": 65,
+    "ekf_converged": 242,
+    "first_cplane": 66,
+    "first_pop_ping": 79,
+    "gps_valid": 36,
+    "initial_network_entry": 65,
+    "network_schedule": 68,
+    "rf_ready": 23,
+    "stable_connection": 4427
+   },
+   "is_snr_above_noise_floor": true,
+   "mobility_class": "MOBILE",
+   "nat_flag": "NAT_DISABLED",
+   "ned2dish_quaternion": {
+    "q_scalar": -0.12395031,
+    "q_x": 0.64954287,
+    "q_y": -0.7369186,
+    "q_z": 0.14029011
+   },
+   "obstruction_stats": {
+    "avg_prolonged_obstruction_duration_s": 1.1760631,
+    "avg_prolonged_obstruction_interval_s": 192.0,
+    "fraction_obstructed": 0.1247733,
+    "patches_valid": 2757,
+    "time_obstructed": 0.03233899,
+    "valid_s": 10188.0
+   },
+   "plc_stats": {
+    "port_1_stats": {},
+    "port_2_stats": {},
+    "port_3_stats": {}
+   },
+   "pop_ping_latency_ms": 18.355455969587304,
+   "ready_states": {
+    "aap": true,
+    "l1l2": true,
+    "rf": true,
+    "scp": true,
+    "xphy": true
+   },
+   "seconds_to_first_nonempty_slot": 1790399000.0,
+   "seconds_until_swupdate_reboot_possible": -1,
+   "software_update_state": "REBOOT_REQUIRED",
+   "software_update_stats": {
+    "reboot_scheduled_utc_time": 1790420099,
+    "software_update_progress": 1.0,
+    "software_update_state": "REBOOT_REQUIRED",
+    "update_requires_reboot": true
+   },
+   "ul_bandwidth_restricted_reason": "NO_LIMIT",
+   "uplink_throughput_bps": 273344.10312655906,
+   "upsu_stats": {}
+  },
+  "aim_age_s": 0.5804245471954346
  },
  "router": {
   "status": {
@@ -826,7 +950,7 @@
      "latencyMs": null,
      "target": {
       "address": "209.197.29.1",
-      "location": "S\u00e3o Paulo",
+      "location": "São Paulo",
       "service": "Counter-Strike: GO"
      }
     },
@@ -979,7 +1103,7 @@
      "latencyMs": 214.9622,
      "target": {
       "address": "dynamodb.sa-east-1.amazonaws.com",
-      "location": "S\u00e3o Paulo",
+      "location": "São Paulo",
       "service": "Fortnite"
      }
     },
@@ -1029,13 +1153,62 @@
     }
    }
   },
-  "ping_age_s": 95.0
+  "ping_age_s": 43.6
+ },
+ "running": {
+  "speedtest": {
+   "started": 1790414518.5293636,
+   "status": {
+    "running": false,
+    "id": 1986019855,
+    "down": {
+     "throughputs_mbps": [
+      62.8,
+      97.9,
+      100.9,
+      80.5,
+      131.9,
+      89.1,
+      101.5,
+      111.1,
+      61.7,
+      109.5,
+      72.8,
+      110.2,
+      101.9,
+      123.6,
+      98.8
+     ]
+    },
+    "up": {
+     "throughputs_mbps": [
+      9.0,
+      14.2,
+      12.0,
+      16.5,
+      18.5,
+      13.9,
+      15.4,
+      11.5,
+      17.0,
+      11.9,
+      13.2,
+      18.0,
+      9.7,
+      21.8,
+      22.0
+     ]
+    }
+   },
+   "done": true,
+   "error": null
+  }
  },
  "explain": {
   "headline": {
    "text": "online",
    "tone": "ok",
-   "detail": "19 ms to starlink \u00b7 update pending, restarts ~03:54"
+   "detail": "18 ms to starlink · update pending, restarts ~03:54"
   },
   "alerts": [
    {
@@ -1053,8 +1226,8 @@
    "tilt_deg": -0.4314499999999981,
    "ok": false,
    "text": [
-    "turn it 11\u00b0 to the left, standing behind it",
-    "tilt is fine (0\u00b0 off)"
+    "turn it 11° to the left, standing behind it",
+    "tilt is fine (0° off)"
    ],
    "confidence": "FILTER_CONVERGED",
    "uncertainty_deg": 0.72698814
@@ -1090,7 +1263,7 @@
    ],
    [
     "dish uptime",
-    "3 h 8 min"
+    "3 h 9 min"
    ],
    [
     "ethernet",
@@ -1118,7 +1291,7 @@
    ],
    [
     "power save",
-    "on, 09:00\u201313:00"
+    "on, 02:00–06:00"
    ],
    [
     "location sharing",
@@ -1149,25 +1322,51 @@
     "3 h 1 min"
    ],
    [
-    "router \u2192 dish",
+    "router → dish",
     "0.5 ms"
    ],
    [
-    "router \u2192 Starlink",
+    "router → Starlink",
     "17 ms, 1.7 % lost over 5 min"
    ],
    [
-    "router \u2192 internet",
+    "router → internet",
     "31 ms, 6.7 % lost over 5 min"
    ]
-  ]
+  ],
+  "software": {
+   "dish": {
+    "version": "2026.05.13.mr80201",
+    "state": "REBOOT_REQUIRED",
+    "text": "update ready — restart to install",
+    "progress": null,
+    "restart_at": 1790420099.0
+   },
+   "router": {
+    "version": "2026.05.08.mr76937",
+    "state": "REBOOT_PENDING",
+    "text": "update ready — installs with the next restart"
+   },
+   "update_hour": 3,
+   "update_waiting": true
+  }
  },
  "controls": [
   {
    "name": "restart",
-   "label": "restart dish",
-   "group": "restart",
+   "label": "restart",
+   "group": "software",
    "confirm": "restart the dish? the internet drops while it boots, usually a minute or two.",
+   "params": [],
+   "available": true,
+   "reason": null,
+   "current": {}
+  },
+  {
+   "name": "install_update",
+   "label": "install update now",
+   "group": "software",
+   "confirm": "install the waiting update now? the dish restarts to install it — on a mini the wifi goes down too — and the internet is gone for a few minutes.",
    "params": [],
    "available": true,
    "reason": null,
@@ -1212,7 +1411,7 @@
      "type": "int",
      "min": 0,
      "max": 1439,
-     "label": "starts (the dish's local time)"
+     "label": "starts"
     },
     {
      "name": "duration_minutes",
@@ -1297,82 +1496,51 @@
    "current": {}
   }
  ],
- "running": {
-  "speedtest": {
-   "started": 1790410240.44,
-   "done": true,
-   "error": null,
-   "status": {
-    "status": {
-     "running": false,
-     "id": 1234,
-     "down": {
-      "throughputs_mbps": [
-       88.4,
-       97.1,
-       103.6,
-       101.2,
-       99.8,
-       104.3,
-       102.7,
-       100.9,
-       98.5,
-       101.4
-      ]
-     },
-     "up": {
-      "throughputs_mbps": [
-       14.2,
-       15.8,
-       16.1,
-       15.4,
-       16.9,
-       15.7,
-       16.3,
-       15.9,
-       16.4,
-       16.0
-      ]
-     }
-    }
-   }
-  }
- },
  "events": [
   {
-   "t": 1790409655.44,
-   "kind": "app",
-   "text": "localdish 0.1.0 started (demo)"
-  },
-  {
-   "t": 1790409655.64,
+   "t": 1790414515.6054692,
    "kind": "dish",
-   "text": "schema loaded: 19 files"
+   "text": "dish reachable at demo"
   },
   {
-   "t": 1790409655.94,
+   "t": 1790414515.6055334,
    "kind": "dish",
-   "text": "reachable"
+   "text": "dish schema loaded"
   },
   {
-   "t": 1790409656.3400002,
+   "t": 1790414515.605641,
+   "kind": "dish",
+   "text": "online"
+  },
+  {
+   "t": 1790414515.6060696,
    "kind": "router",
-   "text": "schema loaded: 19 files"
+   "text": "router reachable at demo"
   },
   {
-   "t": 1790409656.44,
+   "t": 1790414515.6060963,
    "kind": "router",
-   "text": "reachable"
+   "text": "router schema loaded"
   },
   {
-   "t": 1790409657.24,
-   "kind": "dish",
-   "text": "headline: online"
-  },
-  {
-   "t": 1790410170.44,
+   "t": 1790414518.521734,
    "kind": "control",
-   "text": "demo: ping test"
+   "text": "ping test: done"
+  },
+  {
+   "t": 1790414518.5293875,
+   "kind": "app",
+   "text": "demo: router start_speedtest (nothing sent; the result is made up)"
+  },
+  {
+   "t": 1790414518.529447,
+   "kind": "control",
+   "text": "speed test: speed test started"
+  },
+  {
+   "t": 1790414533.547329,
+   "kind": "control",
+   "text": "speed test finished"
   }
  ]
 }

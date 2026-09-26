@@ -44,6 +44,11 @@
   // the dish keeps its power-save schedule in minutes after midnight UTC; people think in their own clock
   function utcToLocalMin(m) { const d = new Date(); d.setUTCHours(Math.floor(m / 60) % 24, m % 60, 0, 0); return d.getHours() * 60 + d.getMinutes(); }
   function localToUtcMin(m) { const d = new Date(); d.setHours(Math.floor(m / 60) % 24, m % 60, 0, 0); return d.getUTCHours() * 60 + d.getUTCMinutes(); }
+  // clock times people read, in the browser's own style ("3:15 AM" or "03:15")
+  const timeFmt = new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "2-digit" });
+  const hourFmt = new Intl.DateTimeFormat(undefined, { hour: "numeric" });
+  function timeOfMin(m, hourOnly) { m = ((m % 1440) + 1440) % 1440; return (hourOnly ? hourFmt : timeFmt).format(new Date(2000, 0, 1, Math.floor(m / 60), m % 60)); }
+  function timeOfUnix(unix) { return isNum(unix) ? timeFmt.format(new Date(unix * 1000)) : "—"; }
   function deg(v, digits) { return isNum(v) ? v.toFixed(digits === undefined ? 0 : digits) + "°" : "—"; }
 
   // a response body may arrive wrapped ({"device_info": {...}}) or bare; take the inner one when it is there
@@ -544,7 +549,7 @@
     const tbody = $("ping-rows");
     if (!results || typeof results !== "object" || !Object.keys(results).length) {
       $("ping-summary").textContent = "";
-      const tr = node("tr"), td = node("td", "muted", "no results yet: run the ping test under controls");
+      const tr = node("tr"), td = node("td", "muted", "no results yet: press ping above");
       td.colSpan = 4; tr.append(td); tbody.replaceChildren(tr);
       return;
     }
@@ -572,27 +577,332 @@
     }));
   }
 
+  // ---- software ------------------------------------------------------------------------------------------------
+
+  // explain.software = {dish: {version, state, text, progress, restart_at}, router: {version, state, text} | null,
+  // update_hour, update_waiting}
+  function renderSoftware() {
+    const sw = (S.explain && S.explain.software) || null;
+    const d = (sw && sw.dish) || {};
+    $("sw-dish-version").textContent = d.version || "—";
+    const st = $("sw-dish-state");
+    st.textContent = d.text || (sw ? "update state not reported" : "not read yet");
+    st.className = "sw-state " + (d.state === "FAULTED" ? "t-bad" : sw && sw.update_waiting ? "t-warn" : d.state === "IDLE" ? "t-ok" : "muted");
+    const prog = $("sw-dish-progress");
+    prog.hidden = !isNum(d.progress);
+    if (isNum(d.progress)) { prog.value = d.progress; st.textContent += " · " + Math.round(d.progress * 100) + " %"; }
+    const now = (S.localdish && S.localdish.now) || Date.now() / 1000;
+    const rs = $("sw-dish-restart");
+    rs.hidden = !isNum(d.restart_at);
+    if (isNum(d.restart_at)) rs.textContent = (d.restart_at > now ? "restarts on its own at ~" : "was due to restart at ~") + timeOfUnix(d.restart_at);
+    const r = sw && sw.router;
+    $("sw-router").hidden = !r;
+    if (r) {
+      $("sw-router-version").textContent = r.version || "—";
+      $("sw-router-state").textContent = r.text || "";
+      $("sw-router-state").className = "sw-state " + (r.state === "IDLE" ? "t-ok" : r.state ? "t-warn" : "muted");
+    }
+    $("sw-hour").textContent = sw && isNum(sw.update_hour) ? timeOfMin(sw.update_hour * 60) : "—";
+  }
+
   // ---- controls ------------------------------------------------------------------------------------------------
 
-  const GROUPS = ["software", "settings", "maintenance", "tests"];
+  // Each control the server lists has a home: restart and install in the software card, clear in the map card,
+  // speed test and ping in the tests card, and the three dish settings in their own cards. A control this page does
+  // not know is drawn from its params under "other", so one added later still shows.
+  // ctl = {name, def, btn, result, reason, busy, dirty, read() → params, lines(params) → [text], sync(def), cancel()}
   const ctls = {};
   let pending = null;
 
   function post(body) { return { method: "POST", headers: { "X-Localdish": "1", "Content-Type": "application/json" }, body: JSON.stringify(body) }; }
 
   const isChoice = (p) => Array.isArray(p.choices) || p.type === "enum" || p.type === "choice";
-  const isClock = (p) => /start_minutes$/.test(p.name);
-
+  const isDanger = (c) => c.group === "software" || c.group === "maintenance";
   function labelOf(p) { return p.label || words(p.name); }
-
   function showParam(p, v) {
     if (v === undefined || v === null) return "—";
     if (p.type === "bool") return v ? "on" : "off";
     if (isChoice(p)) return words(v);
-    if (isClock(p)) return clockMin(utcToLocalMin(v));
-    if (/_minutes$/.test(p.name)) return fmtDur(v * 60);
     return String(v);
   }
+  const sameParams = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+
+  function newCtl(name, btn, notes, more) {
+    const ctl = Object.assign({ name: name, def: null, btn: btn, busy: false, dirty: false, hold: null,
+                                result: node("div", "result"), reason: node("div", "reason") }, more || {});
+    notes.append(ctl.reason, ctl.result);
+    return (ctls[name] = ctl);
+  }
+
+  // after a setting is sent, the dish's config takes a moment to say so: until it does (15 s at most), keep showing
+  // what was sent rather than snapping back to the old value
+  function holding(ctl, cur) {
+    if (ctl.hold && Date.now() < ctl.hold.until && !sameParams(cur, ctl.hold.params)) return true;
+    ctl.hold = null;
+    return false;
+  }
+
+  function reasonFor(ctl, c) { ctl.reason.textContent = c.available ? "" : (c.label || words(c.name)) + ": " + (c.reason || "not available now"); }
+
+  // a button that sends a control with no params
+  function actionCtl(name, host, notes, text, tone) {
+    const btn = node("button", "btn small " + tone, text);
+    btn.type = "button";
+    host.append(btn);
+    const ctl = newCtl(name, btn, notes, {
+      sync(c) {
+        // install is offered only while an update is waiting; the others stay in view, greyed, with the reason
+        btn.hidden = name === "install_update" && !c.available;
+        btn.disabled = ctl.busy || !c.available;
+        btn.title = c.available ? "" : c.reason || "";
+        if (btn.hidden) ctl.reason.textContent = ""; else reasonFor(ctl, c);
+      },
+    });
+    btn.addEventListener("click", () => ask(ctl));
+    return ctl;
+  }
+
+  // ---- sleep schedule ------------------------------------------------------------------------------------------
+
+  // The dish keeps start and duration in UTC minutes; here they are sleep and wake on this computer's clock.
+  const DIAL = { size: 320, c: 160, r: 128, band: 38, step: 5 };
+  const dayMin = (m) => ((Math.round(m) % 1440) + 1440) % 1440;
+  const asleepFor = (d) => dayMin(d.wake - d.sleep);
+
+  function sleepOf(cur) {
+    if (!cur || !isNum(cur.start_minutes)) return null;
+    const sleep = utcToLocalMin(cur.start_minutes);
+    return { enabled: !!cur.enabled, sleep: sleep, wake: dayMin(sleep + (isNum(cur.duration_minutes) ? cur.duration_minutes : 0)) };
+  }
+
+  function dialPoint(min, rr) {
+    const a = min / 1440 * 2 * Math.PI;
+    return [DIAL.c + rr * Math.sin(a), DIAL.c - rr * Math.cos(a)];
+  }
+  const f1 = (v) => v.toFixed(1);
+
+  function buildDial() {
+    const { size, c, r, band } = DIAL;
+    let svg = '<svg viewBox="0 0 ' + size + " " + size + '" class="dial-svg">' +
+      '<circle class="dial-rim" cx="' + c + '" cy="' + c + '" r="' + (r + band / 2 + 8) + '"/>' +
+      '<circle class="dial-track" cx="' + c + '" cy="' + c + '" r="' + r + '" stroke-width="' + band + '"/>' +
+      '<path class="dial-arc" stroke-width="' + band + '"/>' +
+      '<circle class="dial-inner" cx="' + c + '" cy="' + c + '" r="' + (r - band / 2 - 4) + '"/>';
+    // a tick every 15 min, a long one on the hour; ticks under the sleep arc light up
+    for (let i = 0; i < 96; i++) {
+      const hour = i % 4 === 0, [x1, y1] = dialPoint(i * 15, r - (hour ? 11 : 6)), [x2, y2] = dialPoint(i * 15, r + (hour ? 11 : 6));
+      svg += '<line class="dial-tick' + (hour ? " hour" : "") + '" data-min="' + i * 15 + '" x1="' + f1(x1) + '" y1="' + f1(y1) + '" x2="' + f1(x2) + '" y2="' + f1(y2) + '"/>';
+    }
+    svg += '<line class="dial-now k-bad"/>';
+    // 12 AM at the top with a moon, 6 AM right, 12 PM at the bottom with a sun, 6 PM left: as the Starlink app draws it
+    const lr = r - band / 2 - 22;
+    for (const [m, anchor, dx, dy] of [[0, "middle", 0, 4], [360, "end", 8, 4], [720, "middle", 0, 4], [1080, "start", -8, 4]]) {
+      const [x, y] = dialPoint(m, lr);
+      svg += '<text class="dial-label" x="' + f1(x + dx) + '" y="' + f1(y + dy) + '" text-anchor="' + anchor + '">' + esc(timeOfMin(m, true)) + "</text>";
+    }
+    const my = c - lr + 18, sy = c + lr - 22;
+    svg += '<path class="dial-icon" d="M' + (c + 4) + " " + (my - 8) + "A8 8 0 1 0 " + (c + 4) + " " + (my + 8) + "A10 10 0 0 1 " + (c + 4) + " " + (my - 8) + 'Z"/>';
+    svg += '<g class="dial-icon"><circle cx="' + c + '" cy="' + sy + '" r="4"/>';
+    for (let k = 0; k < 8; k++) {
+      const a = k * Math.PI / 4;
+      svg += '<line x1="' + f1(c + 6.5 * Math.cos(a)) + '" y1="' + f1(sy + 6.5 * Math.sin(a)) + '" x2="' + f1(c + 9 * Math.cos(a)) + '" y2="' + f1(sy + 9 * Math.sin(a)) + '"/>';
+    }
+    svg += "</g>" +
+      '<text class="dial-length" x="' + c + '" y="' + (c - 2) + '" text-anchor="middle"></text>' +
+      '<text class="dial-sub" x="' + c + '" y="' + (c + 15) + '" text-anchor="middle">asleep each day</text>';
+    for (const which of ["sleep", "wake"]) {
+      svg += '<circle class="dial-handle" data-which="' + which + '" r="' + (band / 2 - 2) + '" tabindex="0" role="slider" aria-label="' + which +
+        ' time" aria-valuemin="0" aria-valuemax="1435"/>';
+    }
+    $("sleep-dial").innerHTML = svg + "</svg>";
+  }
+
+  function drawDial(d) {
+    const box = $("sleep-dial"), svg = box.querySelector("svg");
+    if (!svg) return;
+    const { r } = DIAL, len = asleepFor(d);
+    const [x1, y1] = dialPoint(d.sleep, r), [x2, y2] = dialPoint(d.wake, r);
+    svg.querySelector(".dial-arc").setAttribute("d", len ? "M" + f1(x1) + " " + f1(y1) + "A" + r + " " + r + " 0 " + (len > 720 ? 1 : 0) + " 1 " + f1(x2) + " " + f1(y2) : "");
+    for (const t of svg.querySelectorAll(".dial-tick")) t.classList.toggle("on", dayMin(+t.dataset.min - d.sleep) < len);
+    for (const h of svg.querySelectorAll(".dial-handle")) {
+      const m = d[h.dataset.which], [x, y] = dialPoint(m, r);
+      h.setAttribute("cx", f1(x)); h.setAttribute("cy", f1(y));
+      h.setAttribute("aria-valuenow", String(m));
+      h.setAttribute("aria-valuetext", timeOfMin(m));
+    }
+    const now = new Date(), nowMin = now.getHours() * 60 + now.getMinutes();
+    const [nx1, ny1] = dialPoint(nowMin, r - DIAL.band / 2), [nx2, ny2] = dialPoint(nowMin, r + DIAL.band / 2);
+    const nl = svg.querySelector(".dial-now");
+    nl.setAttribute("x1", f1(nx1)); nl.setAttribute("y1", f1(ny1)); nl.setAttribute("x2", f1(nx2)); nl.setAttribute("y2", f1(ny2));
+    svg.querySelector(".dial-length").textContent = len ? fmtDur(len * 60) : "no time";
+  }
+
+  function sleepCtl() {
+    const ctl = newCtl("power_save", $("sleep-save"), $("sleep-notes"), { draft: null, base: null, drag: null });
+    buildDial();
+
+    function show() {
+      const d = ctl.draft;
+      $("sleep-enabled").checked = !!(d && d.enabled);
+      $("sleep-at").textContent = d ? timeOfMin(d.sleep) : "—";
+      $("wake-at").textContent = d ? timeOfMin(d.wake) : "—";
+      $("sleep-body").classList.toggle("off", !(d && d.enabled));
+      if (d) drawDial(d);
+      ctl.dirty = !!(d && ctl.base && !sameParams(d, ctl.base));
+      $("sleep-undo").hidden = !ctl.dirty;
+      const c = ctl.def;
+      ctl.btn.disabled = ctl.busy || !d || !c || !c.available || !ctl.dirty;
+    }
+    function edit(change) {
+      if (!ctl.draft) return;
+      ctl.draft = Object.assign({}, ctl.draft, change);
+      ctl.result.textContent = "";
+      show();
+    }
+
+    ctl.sync = (c) => {
+      const cur = c.current || {};
+      const held = holding(ctl, cur);
+      ctl.base = held ? sleepOf(ctl.hold.params) : sleepOf(cur);
+      if ((!ctl.dirty || !ctl.draft) && !ctl.drag && document.activeElement !== $("sleep-input") && document.activeElement !== $("wake-input")) {
+        ctl.draft = ctl.base && Object.assign({}, ctl.base);
+      }
+      for (const el of [$("sleep-enabled"), $("sleep-at"), $("wake-at")]) el.disabled = ctl.busy || !c.available || !ctl.draft;
+      reasonFor(ctl, c);
+      show();
+    };
+    ctl.read = () => {
+      const d = ctl.draft, len = asleepFor(d);
+      // equal times would be 24 h asleep: refused while the schedule is on; switched off, the length doesn't matter
+      if (!len && d.enabled) throw new Error("sleep and wake are the same time: pick a different wake time");
+      return { enabled: d.enabled, start_minutes: localToUtcMin(d.sleep), duration_minutes: len || 60 };
+    };
+    ctl.lines = (p) => p.enabled
+      ? ["sleep at " + timeOfMin(ctl.draft.sleep) + ", wake at " + timeOfMin(ctl.draft.wake) + " (this computer's clock)",
+         "asleep " + fmtDur(p.duration_minutes * 60) + " every day"]
+      : ["sleep schedule off: the dish stays awake"];
+
+    $("sleep-enabled").addEventListener("change", (e) => edit({ enabled: e.target.checked }));
+    $("sleep-undo").addEventListener("click", () => { ctl.draft = ctl.base && Object.assign({}, ctl.base); ctl.result.textContent = ""; show(); });
+    ctl.btn.addEventListener("click", () => ask(ctl));
+
+    // the big times: a click swaps in a time input
+    for (const which of ["sleep", "wake"]) {
+      const shown = $(which + "-at"), input = $(which + "-input");
+      const close = () => { input.hidden = true; shown.hidden = false; };
+      shown.addEventListener("click", () => {
+        if (!ctl.draft) return;
+        input.value = clockMin(ctl.draft[which]);
+        shown.hidden = true; input.hidden = false; input.focus();
+      });
+      input.addEventListener("change", () => {
+        const m = /^(\d{1,2}):(\d{2})/.exec(input.value);
+        if (m) edit({ [which]: dayMin(parseInt(m[1], 10) * 60 + parseInt(m[2], 10)) });
+      });
+      input.addEventListener("blur", close);
+      input.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === "Escape") { e.preventDefault(); close(); shown.focus(); } });
+    }
+
+    // the handles: drag them round the dial in 5-minute steps, or use the arrow keys; a click on the ring moves the
+    // nearer handle there
+    const svg = $("sleep-dial").querySelector("svg");
+    const minAt = (e) => {
+      const b = svg.getBoundingClientRect();
+      const x = (e.clientX - b.left) / b.width * DIAL.size - DIAL.c, y = (e.clientY - b.top) / b.height * DIAL.size - DIAL.c;
+      return { min: dayMin(Math.round(((Math.atan2(x, -y) / (2 * Math.PI)) * 1440) / DIAL.step) * DIAL.step), dist: Math.hypot(x, y) };
+    };
+    svg.addEventListener("pointerdown", (e) => {
+      if (!ctl.draft || !ctl.draft.enabled || ctl.busy || !(ctl.def && ctl.def.available)) return;
+      const at = minAt(e);
+      let which = e.target.dataset && e.target.dataset.which;
+      if (!which) {
+        if (Math.abs(at.dist - DIAL.r) > DIAL.band / 2 + 6) return;       // not on the ring
+        which = Math.abs(dayMin(at.min - ctl.draft.sleep + 720) - 720) <= Math.abs(dayMin(at.min - ctl.draft.wake + 720) - 720) ? "sleep" : "wake";
+      }
+      e.preventDefault();
+      ctl.drag = which;
+      svg.setPointerCapture(e.pointerId);
+      svg.querySelector('[data-which="' + which + '"]').focus();
+      edit({ [which]: at.min });
+    });
+    svg.addEventListener("pointermove", (e) => { if (ctl.drag) { const m = minAt(e).min; if (m !== ctl.draft[ctl.drag]) edit({ [ctl.drag]: m }); } });
+    const drop = () => { ctl.drag = null; };
+    svg.addEventListener("pointerup", drop);
+    svg.addEventListener("pointercancel", drop);
+    svg.addEventListener("keydown", (e) => {
+      const which = e.target.dataset && e.target.dataset.which;
+      const by = { ArrowUp: 5, ArrowRight: 5, ArrowDown: -5, ArrowLeft: -5, PageUp: 60, PageDown: -60 }[e.key];
+      if (!which || !by || !ctl.draft || !ctl.draft.enabled || $("sleep-enabled").disabled) return;
+      e.preventDefault();
+      edit({ [which]: dayMin(Math.round((ctl.draft[which] + by) / DIAL.step) * DIAL.step) });
+    });
+    return ctl;
+  }
+
+  // ---- snow melt and location ------------------------------------------------------------------------------------
+
+  // the Starlink app's three choices, in its words
+  const SNOW = {
+    AUTO: ["automatic", "melts snow when the dish senses it"],
+    ALWAYS_ON: ["pre-heat", "keeps the dish warm so snow can't settle; uses the most power"],
+    ALWAYS_OFF: ["off", "never heats: snow can pile up and block the signal"],
+  };
+  const snowName = (v) => (SNOW[v] ? SNOW[v][0] : words(v));
+
+  function snowCtl() {
+    const ctl = newCtl("snow_melt", $("snow-save"), $("snow-notes"), { draft: null, base: null });
+    const box = $("snow-modes");
+    function show() {
+      for (const inp of box.querySelectorAll("input")) inp.checked = inp.value === ctl.draft;
+      ctl.dirty = !!ctl.draft && ctl.draft !== ctl.base;
+      $("snow-hint").textContent = ctl.draft ? (SNOW[ctl.draft] ? SNOW[ctl.draft][1] : "") +
+        (ctl.dirty && ctl.base ? " · now " + snowName(ctl.base) : "") : "not read yet";
+      ctl.btn.disabled = ctl.busy || !(ctl.def && ctl.def.available) || !ctl.dirty;
+    }
+    ctl.sync = (c) => {
+      if (!box.children.length) {
+        const p = (c.params || [])[0] || {};
+        for (const v of p.choices || Object.keys(SNOW)) {
+          const lab = node("label", "seg"), inp = node("input");
+          inp.type = "radio"; inp.name = "snow-mode"; inp.value = v;
+          inp.addEventListener("change", () => { ctl.draft = v; ctl.result.textContent = ""; show(); });
+          lab.append(inp, node("span", null, snowName(v)));
+          box.append(lab);
+        }
+      }
+      const cur = c.current || {};
+      ctl.base = holding(ctl, cur) ? ctl.hold.params.mode : cur.mode || null;
+      if (!ctl.dirty) ctl.draft = ctl.base;
+      for (const inp of box.querySelectorAll("input")) inp.disabled = ctl.busy || !c.available;
+      reasonFor(ctl, c);
+      show();
+    };
+    ctl.read = () => ({ mode: ctl.draft });
+    ctl.lines = (p) => ["snow melt: " + snowName(p.mode) + (ctl.base ? " (now " + snowName(ctl.base) + ")" : "")];
+    ctl.btn.addEventListener("click", () => ask(ctl));
+    return ctl;
+  }
+
+  // flipping the switch asks at once; cancelling puts it back
+  function shareCtl() {
+    const box = $("share-location");
+    const ctl = newCtl("share_location", box, $("share-notes"));
+    ctl.sync = (c) => {
+      const cur = c.current || {};
+      const on = holding(ctl, cur) ? ctl.hold.params.share : cur.share;
+      if (!ctl.dirty) box.checked = !!on;
+      box.disabled = ctl.busy || !c.available || on === undefined;
+      reasonFor(ctl, c);
+    };
+    ctl.read = () => ({ share: box.checked });
+    ctl.lines = (p) => [p.share ? "any device on the dish's wifi can then ask for its exact location" : "devices on the dish's wifi can no longer read its location"];
+    ctl.cancel = () => { ctl.dirty = false; if (S) renderControls(); };
+    ctl.done = () => { ctl.dirty = false; };
+    box.addEventListener("change", () => { ctl.dirty = true; ask(ctl); });
+    return ctl;
+  }
+
+  // ---- other controls, drawn from their params -------------------------------------------------------------------
 
   function paramInput(ctl, p) {
     const wrap = node("label", "param");
@@ -600,27 +910,18 @@
     if (p.type === "bool") {
       wrap.className = "param toggle";
       input = node("input"); input.type = "checkbox";
-      wrap.append(input, node("span", "track"), node("span", null, p.label || words(p.name)));
+      wrap.append(input, node("span", "track"), node("span", null, labelOf(p)));
     } else {
       wrap.append(node("span", null, labelOf(p)));
       if (isChoice(p)) {
         input = node("select");
         for (const c of p.choices || []) { const o = node("option", null, words(c)); o.value = c; input.append(o); }
-      } else if (isClock(p)) {
-        input = node("input"); input.type = "time"; input.step = 60;
       } else {
         input = node("input"); input.type = "number"; input.step = 1;
         if (isNum(p.min)) input.min = p.min;
         if (isNum(p.max)) input.max = p.max;
       }
       wrap.append(input);
-      if (/_minutes$/.test(p.name) && !isClock(p)) {
-        const hint = node("span", "hint");
-        const upd = () => { const n = parseInt(input.value, 10); hint.textContent = isNum(n) ? "= " + fmtDur(n * 60) : ""; };
-        input.addEventListener("input", upd);
-        ctl.hints.push(upd);
-        wrap.append(hint);
-      }
     }
     input.addEventListener("input", () => { ctl.dirty = true; });
     input.addEventListener("change", () => { ctl.dirty = true; });
@@ -628,120 +929,134 @@
     return wrap;
   }
 
-  function setInputs(ctl, cur) {
-    for (const k in ctl.inputs) {
-      const { p, el } = ctl.inputs[k], v = cur[k];
-      if (v === undefined) continue;
-      if (p.type === "bool") el.checked = !!v;
-      else if (isClock(p)) el.value = clockMin(utcToLocalMin(v));
-      else el.value = String(v);
-    }
-    ctl.hints.forEach((f) => f());
-  }
-
-  // read the inputs back into params, or say what is wrong with them
-  function readInputs(ctl) {
-    const out = {};
-    for (const k in ctl.inputs) {
-      const { p, el } = ctl.inputs[k];
-      if (p.type === "bool") out[k] = el.checked;
-      else if (isChoice(p)) out[k] = el.value;
-      else if (isClock(p)) {
-        const m = /^(\d{1,2}):(\d{2})/.exec(el.value);
-        if (!m) throw new Error((p.label || words(k)) + ": pick a time");
-        out[k] = localToUtcMin(parseInt(m[1], 10) * 60 + parseInt(m[2], 10));
-      } else {
-        const n = Number(el.value);
-        if (el.value === "" || !Number.isInteger(n)) throw new Error((p.label || words(k)) + ": a whole number, please");
-        if ((isNum(p.min) && n < p.min) || (isNum(p.max) && n > p.max)) throw new Error((p.label || words(k)) + ": between " + p.min + " and " + p.max);
-        out[k] = n;
-      }
-    }
-    return out;
-  }
-
-  function buildControl(c) {
+  function genericCtl(c) {
     let group = $("controls").querySelector('[data-group="' + CSS.escape(c.group) + '"]');
     if (!group) {
       group = node("div", "control-group");
       group.dataset.group = c.group;
       group.append(node("h3", null, words(c.group)));
-      const at = GROUPS.indexOf(c.group);
-      const after = [...$("controls").children].find((g) => { const i = GROUPS.indexOf(g.dataset.group); return at >= 0 && (i < 0 || i > at); });
-      $("controls").insertBefore(group, after || null);
+      $("controls").append(group);
     }
-    const ctl = { name: c.name, inputs: {}, hints: [], dirty: false, busy: false, root: node("div", "control") };
-    ctl.root.dataset.control = c.name;
+    const root = node("div", "control");
+    root.dataset.control = c.name;
     const title = node("div", "control-title");
     title.append(node("span", null, c.label || words(c.name)));
-    ctl.now = node("div", "control-now");
-    ctl.root.append(title, ctl.now);
-    for (const p of c.params || []) ctl.root.append(paramInput(ctl, p));
-    ctl.btn = node("button", "btn " + (c.group === "software" || c.group === "maintenance" ? "danger" : "primary"),
+    const now = node("div", "control-now");
+    root.append(title, now);
+    const btn = node("button", "btn " + (isDanger(c) ? "danger" : "primary"),
       (c.params || []).length ? "apply" : c.group === "tests" ? "run" : (c.label || words(c.name)).split(" ")[0]);
-    ctl.btn.type = "button";
-    ctl.btn.addEventListener("click", () => ask(ctl));
-    ctl.reason = node("div", "reason");
-    ctl.result = node("div", "result");
-    ctl.root.append(ctl.btn, ctl.reason, ctl.result);
-    group.append(ctl.root);
-    return (ctls[c.name] = ctl);
+    btn.type = "button";
+    const notes = node("div", "notes");
+    const ctl = newCtl(c.name, btn, notes, { inputs: {}, root: root });
+    for (const p of c.params || []) root.append(paramInput(ctl, p));
+    root.append(btn, notes);
+    group.append(root);
+    btn.addEventListener("click", () => ask(ctl));
+
+    ctl.sync = (d) => {
+      // stow only exists on dishes with motors: on one the dish says has none, it is left out rather than greyed
+      root.hidden = d.name === "stow" && !d.available && hasNoMotors();
+      const cur = d.current || {}, params = d.params || [];
+      const known = params.filter((p) => cur[p.name] !== undefined);
+      now.textContent = known.length ? "now: " + known.map((p) => showParam(p, cur[p.name])).join(" · ") : "";
+      if (!ctl.dirty) for (const p of known) {
+        const el = ctl.inputs[p.name].el;
+        if (p.type === "bool") el.checked = !!cur[p.name]; else el.value = String(cur[p.name]);
+      }
+      btn.disabled = ctl.busy || !d.available;
+      for (const k in ctl.inputs) ctl.inputs[k].el.disabled = ctl.busy || !d.available;
+      ctl.reason.textContent = d.available ? "" : d.reason || "not available now";
+    };
+    ctl.read = () => {
+      const out = {};
+      for (const k in ctl.inputs) {
+        const { p, el } = ctl.inputs[k];
+        if (p.type === "bool") out[k] = el.checked;
+        else if (isChoice(p)) out[k] = el.value;
+        else {
+          const n = Number(el.value);
+          if (el.value === "" || !Number.isInteger(n)) throw new Error(labelOf(p) + ": a whole number, please");
+          if ((isNum(p.min) && n < p.min) || (isNum(p.max) && n > p.max)) throw new Error(labelOf(p) + ": between " + p.min + " and " + p.max);
+          out[k] = n;
+        }
+      }
+      return out;
+    };
+    ctl.lines = (p) => (c.params || []).map((q) => labelOf(q) + ": " + showParam(q, p[q.name]));
+    return ctl;
   }
 
-  // stow only exists on dishes with motors: on one the dish says has none, the control is left out rather than greyed
   function hasNoMotors() {
     const st = (S.dish && S.dish.status) || {};
     const v = st.has_actuators || (st.alignment_stats && st.alignment_stats.has_actuators);
     return v === "HAS_ACTUATORS_NO";
   }
 
+  // where each known control lives; made in this order the first time the server lists it
+  const PLACES = {
+    install_update: () => actionCtl("install_update", $("software-actions"), $("software-notes"), "install update now", "primary"),
+    restart: () => actionCtl("restart", $("software-actions"), $("software-notes"), "restart", "danger"),
+    clear_obstructions: () => actionCtl("clear_obstructions", $("map-actions"), $("map-notes"), "clear", "danger"),
+    speedtest: () => actionCtl("speedtest", $("tests-actions"), $("tests-notes"), "speed test", "primary"),
+    ping: () => actionCtl("ping", $("tests-actions"), $("tests-notes"), "ping", "primary"),
+    power_save: sleepCtl,
+    snow_melt: snowCtl,
+    share_location: shareCtl,
+  };
+
   function renderControls() {
     const list = Array.isArray(S.controls) ? S.controls : [];
-    const noMotors = hasNoMotors();
+    const listed = {};
+    for (const c of list) listed[c.name] = c;
+    for (const name in PLACES) if (listed[name] && !ctls[name]) PLACES[name]();
     for (const c of list) {
-      const ctl = ctls[c.name] || buildControl(c);
+      const ctl = ctls[c.name] || genericCtl(c);
       ctl.def = c;
-      ctl.root.hidden = c.name === "stow" && !c.available && noMotors;
-      const cur = c.current || {};
-      const params = c.params || [];
-      ctl.now.textContent = params.some((p) => cur[p.name] !== undefined)
-        ? "now: " + params.filter((p) => cur[p.name] !== undefined).map((p) => showParam(p, cur[p.name])).join(" · ")
-        : "";
-      if (!ctl.dirty) setInputs(ctl, cur);
-      ctl.btn.disabled = ctl.busy || !c.available;
-      ctl.reason.textContent = c.available ? "" : c.reason || "not available now";
-      for (const k in ctl.inputs) ctl.inputs[k].el.disabled = ctl.busy || !c.available;
+      if (!pending || pending.ctl !== ctl) ctl.sync(c);
     }
+    $("sleep-card").hidden = !listed.power_save;
+    $("snow-block").hidden = !listed.snow_melt;
+    $("share-block").hidden = !listed.share_location;
+    $("settings-card").hidden = !listed.snow_melt;
     for (const g of $("controls").children) g.hidden = ![...g.querySelectorAll(".control")].some((e) => !e.hidden);
+    $("other-card").hidden = ![...$("controls").children].some((g) => !g.hidden);
     renderSpeedtest();
   }
 
   // running.speedtest = {started, status: {status: {running, up: {throughputs_mbps[], err}, down: {…}}}, done, error}
   function renderSpeedtest() {
-    const ctl = ctls.speedtest, run = S.running && S.running.speedtest;
-    if (!ctl || !run || ctl.busy) return;
-    const secs = isNum(S.localdish && S.localdish.now) && isNum(run.started) ? S.localdish.now - run.started : null;
+    const run = S.running && S.running.speedtest;
+    $("speedtest").hidden = !run;
+    if (!run) return;
     const st = inner(run.status, "status") || {};
-    const parts = [];
+    const errs = [];
     for (const dir of ["down", "up"]) {
       const d = st[dir] || {}, t = Array.isArray(d.throughputs_mbps) ? d.throughputs_mbps.filter(isNum) : [];
-      if (t.length) parts.push(dir + " " + t[t.length - 1].toFixed(1) + " Mb/s");
-      if (d.err) parts.push(dir + ": " + words(d.err));
+      $("speedtest-" + dir).textContent = t.length ? t[t.length - 1].toFixed(1) : "—";
+      if (d.err) errs.push(dir + ": " + words(d.err));
     }
-    if (run.error) parts.push(run.error);
-    ctl.result.className = "result " + (run.error ? "t-bad" : run.done ? "t-ok" : "muted");
-    ctl.result.textContent = (run.done ? "finished" : "running" + (secs !== null ? ", " + fmtDur(secs) : "")) + (parts.length ? ": " + parts.join(" · ") : "");
+    if (run.error) errs.push(run.error);
+    const secs = isNum(S.localdish && S.localdish.now) && isNum(run.started) ? S.localdish.now - run.started : null;
+    const note = $("speedtest-note");
+    note.className = "summary " + (errs.length ? "t-bad" : "");
+    note.textContent = (run.done ? "ran at " + timeOfUnix(run.started) : "running" + (secs !== null ? ", " + fmtDur(secs) : "") + "…") +
+      (errs.length ? " · " + errs.join(" · ") : "") + " · measured by the router";
+    $("speedtest").classList.toggle("running", !run.done);
   }
 
   function ask(ctl) {
     let params;
-    try { params = readInputs(ctl); } catch (e) { ctl.result.className = "result t-bad"; ctl.result.textContent = e.message; return; }
+    try { params = ctl.read ? ctl.read() : {}; } catch (e) {
+      ctl.result.className = "result t-bad"; ctl.result.textContent = e.message;
+      if (ctl.cancel) ctl.cancel();
+      return;
+    }
     pending = { ctl: ctl, params: params };
     const c = ctl.def;
     $("confirm-title").textContent = c.label || words(c.name);
     $("confirm-text").textContent = c.confirm || "send this to the " + (c.target || "device") + "?";
-    $("confirm-params").replaceChildren(...(c.params || []).map((p) => node("li", null, labelOf(p) + ": " + showParam(p, params[p.name]))));
-    $("confirm-ok").className = "btn " + (c.group === "software" || c.group === "maintenance" ? "danger" : "primary");
+    $("confirm-params").replaceChildren(...(ctl.lines ? ctl.lines(params) : []).map((t) => node("li", null, t)));
+    $("confirm-ok").className = "btn " + (isDanger(c) ? "danger" : "primary");
     $("confirm").returnValue = "";
     $("confirm").showModal();
   }
@@ -750,14 +1065,16 @@
     ctl.busy = true;
     ctl.btn.disabled = true; ctl.btn.classList.add("busy");
     ctl.result.className = "result muted"; ctl.result.textContent = "sending…";
-    let text, tone;
+    let text, tone, ok = false;
     try {
       const r = await request("/api/control/" + encodeURIComponent(ctl.name), post({ params: params }), CONTROL_TIMEOUT_MS);
-      if (r.ok && r.data && r.data.ok) { text = r.data.text || "done"; tone = "t-ok"; ctl.dirty = false; }
+      ok = !!(r.ok && r.data && r.data.ok);
+      if (ok) { text = r.data.text || "done"; tone = "t-ok"; ctl.dirty = false; ctl.hold = { until: Date.now() + 15000, params: params }; }
       else { text = (r.data && r.data.error) || "http " + r.status; tone = "t-bad"; }
     } catch (e) { text = e.message; tone = "t-bad"; }
     ctl.busy = false;
     ctl.btn.classList.remove("busy");
+    if (ctl.done) ctl.done(ok);
     ctl.result.className = "result " + tone;
     ctl.result.textContent = clock(Date.now() / 1000) + " · " + text;
     if (S) renderControls();
@@ -768,6 +1085,8 @@
     const p = pending;
     pending = null;
     if (p && $("confirm").returnValue === "ok") send(p.ctl, p.params);
+    else if (p && p.ctl.cancel) p.ctl.cancel();
+    else if (S) renderControls();
   });
 
   // ---- events, facts, raw --------------------------------------------------------------------------------------
@@ -834,6 +1153,7 @@
     markAge($("map-card"), $("map-age"), ageOf(O && O.age_s, got.obstruction), STALE_S.obstruction, "the map");
     const dAge = ageOf(S.localdish && S.localdish.dish && S.localdish.dish.age_s, got.state);
     markAge($("aim-card"), null, dAge, STALE_S.dish);
+    markAge($("software-card"), null, dAge, STALE_S.dish);
     markAge($("alerts-card"), null, dAge, STALE_S.dish);
     if (H && H.error) $("history-age-1").textContent = $("history-age-2").textContent = $("outages-age").textContent = "history: " + H.error;
     if (O && O.error) $("map-age").textContent = "map: " + O.error;
@@ -845,6 +1165,7 @@
     renderHeader();
     renderAim();
     renderAlerts();
+    renderSoftware();
     renderClients();
     renderPing();
     renderControls();

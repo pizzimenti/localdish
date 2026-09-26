@@ -1,6 +1,12 @@
 # changelog
 
 ## unreleased
+- settings laid out like the Starlink app: a **sleep schedule** with sleep and wake as clock times and a 24-hour dial
+  whose handles you drag (5-minute steps, or the arrow keys); **snow melt** as automatic / pre-heat / off; save stays
+  greyed until something changes. location sharing moves to an advanced row that says what it does.
+- restart and install update live in the software card, clear in the obstruction map, speed test and ping in a
+  **tests** card that shows the speed test's down and up. a control the page doesn't know still shows, under "other".
+- the facts list the dish's coordinates when it shares them.
 - a software section: dish and router firmware, the update in words, and **install update now** when one is waiting
   (a restart, as the Starlink app does it).
 - the power-save schedule is read as UTC minutes (checked against the Starlink app) and shown on your own clock.

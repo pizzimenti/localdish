@@ -434,6 +434,11 @@ def facts(state: dict) -> list[list]:
         else:
             add("power save", "off")
         add("location sharing", "on (local network)" if config.get("location_request_mode") == "LOCAL" else "off")
+    # only there once sharing is on and the dish has answered get_location
+    lla = _body(dish, "location", "lla")
+    lat, lon = _num(lla.get("lat")), _num(lla.get("lon"))
+    if lat is not None and lon is not None:
+        add("location", f"{lat:.5f}, {lon:.5f}")
     if status:
         obs = _dict(status.get("obstruction_stats"))
         if obs:

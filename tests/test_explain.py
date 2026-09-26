@@ -314,6 +314,12 @@ class FactsTest(unittest.TestCase):
         self.assertEqual(dict(explain.facts(state))["power save"],
                          "on, %s–%s" % (explain._utc_minutes_local(23 * 60), explain._utc_minutes_local(25 * 60)))
 
+    def test_location_only_when_the_dish_says(self):
+        self.assertNotIn("location", dict(explain.facts(mini_state())))
+        state = mini_state()
+        state["dish"]["location"] = {"lla": {"lat": 45.1234567, "lon": -122.7654321, "alt": 80.5}, "source": "GNC_FUSED"}
+        self.assertEqual(dict(explain.facts(state))["location"], "45.12346, -122.76543")
+
     def test_nothing(self):
         self.assertEqual(explain.facts({}), [])
 
