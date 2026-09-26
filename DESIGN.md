@@ -358,6 +358,24 @@ and says how old it is.
   you have edited are not overwritten by the 1 s poll until you send them.
 - Polling is single-flight per endpoint. Returning to a visible tab asks only for what is due.
 
+**Settled while building (app-like settings, replaces section 9 "controls" above):** every control has a home, as the
+Starlink app does it:
+- **software card** (after the live cards): dish and router firmware, the update in words with a progress bar, "restarts
+  on its own at …", the update hour, and the **restart** and **install update now** buttons. install_update is hidden
+  unless available.
+- **sleep schedule card**: an enable toggle; Sleep and Wake as clock times in the browser's locale; a 24 h dial (12 AM at
+  the top) with draggable handles in 5-minute steps and a now marker; Save disabled until changed. Save sends
+  `power_save {enabled, start_minutes: UTC, duration_minutes: (wake − sleep) mod 1440}`. Sleep = wake is refused while
+  on; with the schedule off, 60 is sent. After a save the card shows what was sent for ≤ 15 s, until the config agrees.
+- **snow melt**: automatic / pre-heat / off (AUTO / ALWAYS_ON / ALWAYS_OFF), Save when changed.
+- **advanced**: "let devices on this wifi read the dish's gps position", with a plain explanation; flipping it asks at
+  once. When the dish shares its location, the facts show "lat, lon".
+- clear obstruction map sits in the map card, speed test and ping in the **tests** card, and anything unplaced goes
+  under "other". Nothing on the page shows raw minutes.
+- The page asks for the obstruction map again after 5 s while it has none, not after 60 s.
+- Open: `running.speedtest.status` arrives bare in demo mode (`{running, down, up}`); the real router's shape is
+  unverified.
+
 ## fixtures
 
 `localdish/demo/mini.json` (a Starlink Mini, firmware 2026.05) and `tests/fixtures/standard.json` (a standard

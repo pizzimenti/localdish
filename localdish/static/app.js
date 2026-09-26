@@ -1174,7 +1174,13 @@
     renderRaw();
   }
   function onHistory(data) { H = data; renderCharts(); renderOutages(); renderRaw(); }
-  function onObstruction(data) { O = data; renderMap(); renderRaw(); }
+  let mapRetry = null;
+  function onObstruction(data) {
+    O = data; renderMap(); renderRaw();
+    // the server fetches the map once someone is watching; until it has one, ask again soon instead of in a minute
+    const empty = !(data && data.map && data.map.num_rows);
+    if (empty && !mapRetry) mapRetry = setTimeout(() => { mapRetry = null; loops.obstruction.now(); }, 5000);
+  }
 
   const loops = {
     state: poller("state", "/api/state", onState),
