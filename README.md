@@ -58,7 +58,7 @@ A control the dish or router doesn't support is hidden once it says so.
 ## options
 
 ```
-python3 localdish.py [--port 8686] [--dish 192.168.100.1] [--router auto|ADDRESS|none] [--demo]
+python3 localdish.py [--port 8686] [--dish 192.168.100.1] [--router auto|ADDRESS|none] [--demo] [--capture DIR]
 ```
 
 - `--router auto` (the default) looks for the Starlink router at your default gateway, then `192.168.1.1`.
@@ -70,6 +70,16 @@ The dish and router speak gRPC, and also gRPC-web — the same protocol over pla
 with Python's own `http.client`. To know what the messages mean, it asks each device for its own message definitions
 through gRPC server reflection when it starts. So it always matches the firmware in front of it, and this repository
 contains no Starlink code or protocol files. See [DESIGN.md](DESIGN.md) for the details.
+
+### report a problem / share your dish
+
+`python3 localdish.py --capture DIR` reads your dish once (device info, status, the 15-minute history, the obstruction
+map, config, diagnostics and location, 2 s apart) and your router once (device info, status, wifi clients, ping),
+then writes one JSON file to `DIR` and exits. It only asks: it changes nothing and starts no test. Before writing, it
+scrubs what identifies you. Device, router and account ids, client names, SSIDs, MACs and domains are replaced. LAN,
+private and IPv6 addresses are mapped to documentation ranges, and anything named like a password, key or token is
+dropped. It prints how many of each kind it replaced, never the values. The file has the same format as
+`localdish/demo/mini.json`, so it can go into an issue or become a fixture. Look it over before you share it.
 
 ## safety
 
