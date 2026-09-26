@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+*.egg-info/
+build/
+dist/
+.venv/
+# raw captures from a real dish hold device ids and client names — never commit them
+captures/

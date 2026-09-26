@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "localdish"
+dynamic = ["version"]
+description = "A local, offline web page for your Starlink dish and router: status, graphs, wifi clients and a few controls."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.9"
+dependencies = []
+
+[project.scripts]
+localdish = "localdish.cli:main"
+
+[tool.setuptools]
+packages = ["localdish"]
+
+[tool.setuptools.dynamic]
+version = { attr = "localdish.__version__" }
+
+[tool.setuptools.package-data]
+localdish = ["static/*", "demo/*.json"]
