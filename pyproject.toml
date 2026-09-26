@@ -18,7 +18,7 @@ localdish = "localdish.cli:main"
 packages = ["localdish"]
 
 [tool.setuptools.dynamic]
-version = { attr = "localdish.__version__" }
+version = { attr = "localdish.__init__.__version__" }  # not "localdish.__version__": setuptools would find the launcher localdish.py first
 
 [tool.setuptools.package-data]
 localdish = ["static/*", "demo/*.json"]
