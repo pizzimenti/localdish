@@ -178,9 +178,6 @@ class DemoEndToEndTest(unittest.TestCase):
             self.assertIsNotNone(state["router"]["status"])
             self.assertTrue(state["dish"]["location_error"].startswith("PERMISSION_DENIED"))
             self.assertTrue(state["explain"]["headline"]["text"])
-            # the server's credential stripping must not eat our own fields (it once ate alerts[].key)
-            self.assertTrue(state["explain"]["alerts"])
-            self.assertTrue(all(a.get("name") for a in state["explain"]["alerts"]))
 
             deadline = time.time() + 5
             while get("/api/history")[1]["ring"] is None and time.time() < deadline:
@@ -206,6 +203,9 @@ class DemoEndToEndTest(unittest.TestCase):
     def test_with_the_real_modules(self):
         state = self.run_demo()
         self.assertEqual({c["name"] for c in state["controls"]} >= {"restart", "snow_melt", "speedtest"}, True)
+        # the server's credential stripping must not eat our own fields (it once ate alerts[].key)
+        self.assertTrue(state["explain"]["alerts"])
+        self.assertTrue(all(a.get("name") for a in state["explain"]["alerts"]))
 
 
 if __name__ == "__main__":
