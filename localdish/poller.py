@@ -72,6 +72,7 @@ EVENTS_SHOWN = 50
 SPEEDTEST_POLL_S = 1.0
 SPEEDTEST_MAX_S = 90.0
 SPEEDTEST_START_S = 5.0     # a test not seen running this long after the start is taken as over
+HEADLINE_PAIR_S = 30.0      # the headline flickers at 1 Hz on an obstructed dish: one event per tone pair per 30 s
 
 _ENVELOPE = ("api_version", "status", "id")
 
@@ -148,7 +149,8 @@ class Poller:
         self._inflight = {}          # job name → _Flight
         self._reachable = {t: None for t in self.devices}
         self._schema = {}
-        self._headline = None
+        self._tone = None            # the headline tone last logged
+        self._tone_pairs = {}        # (from tone, to tone) → when it was last logged
         self._calls = {}             # "dish:get_status" → [total, deque of call times]
         self._events = collections.deque(maxlen=EVENTS_MAX)
         self._watched_at = None
@@ -332,10 +334,15 @@ class Poller:
         with self._lock:
             slot = self._slots["dish"]["status"]
             status, error = slot.value, slot.error
-        text = self.explain.headline(status, error).get("text")
-        if text != self._headline:
-            self._headline = text
-            self.event("dish", text)
+        head = self.explain.headline(status, error)
+        tone, now = head.get("tone"), self.clock()
+        with self._lock:
+            pair = (self._tone, tone)
+            if tone == self._tone or now - self._tone_pairs.get(pair, -math.inf) < HEADLINE_PAIR_S:
+                return          # a change that flips straight back stays quiet; one that lasts is logged later
+            self._tone = tone
+            self._tone_pairs[pair] = now
+        self.event("dish", head.get("text") or tone)
 
     # ---- threads
 
@@ -381,7 +388,8 @@ class Poller:
         }
 
     def caches(self, now: float | None = None) -> dict:
-        """The state the page, explain and device.available all see: /api/state's localdish, dish and router."""
+        """What explain and device.available/current read, built once per request: /api/state's localdish, dish,
+        router and running."""
         now = self.clock() if now is None else now
         with self._lock:
             d = self._slots["dish"]
@@ -392,6 +400,7 @@ class Poller:
                          "config": d["config"].value, "diagnostics": d["diagnostics"].value,
                          "location": d["location"].value, "location_error": d["location"].error},
                 "router": None,
+                "running": {"speedtest": dict(self._speedtest) if self._speedtest else None},
             }
             if self.devices.get("router") is not None:
                 r = self._slots["router"]
@@ -413,7 +422,6 @@ class Poller:
         out["explain"] = explained
         out["controls"] = self.controls(state)
         with self._lock:
-            out["running"] = {"speedtest": dict(self._speedtest) if self._speedtest else None}
             out["events"] = list(self._events)[-EVENTS_SHOWN:]
         return out
 

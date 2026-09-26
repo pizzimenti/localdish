@@ -133,7 +133,7 @@ class RouterDiscoveryTest(unittest.TestCase):
 
 
 def _have_real_modules() -> bool:
-    return all(importlib.util.find_spec(f"localdish.{m}") for m in ("device", "explain", "wire"))
+    return all(importlib.util.find_spec(f"localdish.{m}") for m in ("device", "explain"))
 
 
 class DemoEndToEndTest(unittest.TestCase):
@@ -199,7 +199,7 @@ class DemoEndToEndTest(unittest.TestCase):
     def test_with_fake_device_and_explain(self):
         self.run_demo(device=fakes.fake_device_module(), explain=fakes.fake_explain_module())
 
-    @unittest.skipUnless(_have_real_modules(), "device.py, explain.py or wire.py not merged yet")
+    @unittest.skipUnless(_have_real_modules(), "device.py or explain.py not merged yet")
     def test_with_the_real_modules(self):
         state = self.run_demo()
         self.assertEqual({c["name"] for c in state["controls"]} >= {"restart", "snow_melt", "speedtest"}, True)

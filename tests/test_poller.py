@@ -193,6 +193,23 @@ class StatsAndEventsTest(unittest.TestCase):
         self.assertEqual(len(p.events()), n)                    # no change, no event
 
 
+    def test_headline_flicker_logs_once_per_tone_pair_per_30_s(self):
+        p, dish, _, clock = make()
+        p.run_job("status")                                       # waiting → online
+        flip = [OSError(113, "No route to host"), {}] * 10
+        for answer in flip:                                       # bad, ok, bad, ok … once a second
+            dish.answers["get_status"] = answer
+            clock.advance(1)
+            p.run_job("status")
+        heads = [e["text"] for e in p.events() if e["text"] in ("online", "dish unreachable")]
+        self.assertEqual(heads, ["online", "dish unreachable", "online"])
+        clock.advance(30)
+        dish.answers["get_status"] = OSError(113, "No route to host")
+        p.run_job("status")
+        heads = [e["text"] for e in p.events() if e["text"] in ("online", "dish unreachable")]
+        self.assertEqual(heads[-1], "dish unreachable")
+
+
 class RefreshTest(unittest.TestCase):
     def test_rate_limit(self):
         p, _, _, clock = make()
