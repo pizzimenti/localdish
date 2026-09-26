@@ -176,8 +176,8 @@ class AlertsTest(unittest.TestCase):
     def test_known_and_unknown(self):
         out = explain.alerts({"alerts": {"install_pending": True, "dish_water_detected": True,
                                          "some_new_alert": True, "roaming": False}})
-        self.assertEqual([a["key"] for a in out], ["dish_water_detected", "some_new_alert", "install_pending"])
-        self.assertEqual(out[0], {"key": "dish_water_detected", "text": "water in the dish", "tone": "bad"})
+        self.assertEqual([a["name"] for a in out], ["dish_water_detected", "some_new_alert", "install_pending"])
+        self.assertEqual(out[0], {"name": "dish_water_detected", "text": "water in the dish", "tone": "bad"})
         self.assertEqual(out[1]["text"], "some new alert")
 
     def test_every_schema_alert_is_worded(self):
@@ -320,7 +320,7 @@ class ExplainTest(unittest.TestCase):
         out = explain.explain(mini_state(), 1790410225.44)
         self.assertEqual(set(out), {"headline", "alerts", "aim", "facts"})
         self.assertEqual(out["headline"]["text"], "online")
-        self.assertEqual(out["alerts"][0]["key"], "install_pending")
+        self.assertEqual(out["alerts"][0]["name"], "install_pending")
         json.dumps(out, allow_nan=False)
 
     def test_unreachable(self):

@@ -183,9 +183,9 @@ The page shows them as clock times.
 
 ```python
 def ring(history: dict) -> dict        # {"n", "current", "count", "latency_ms", "drop", "down_bps", "up_bps", "power_w"} oldest→newest, valid samples only
-def outages(history: dict, now_unix: float) -> list[dict]   # newest first: {"cause", "start_unix", "ago_s", "duration_s", "did_switch"} (GPS → Unix)
+def outages(history: dict, now_unix: float) -> list[dict]   # newest first: {"cause", "cause_text", "start_unix", "ago_s", "duration_s", "did_switch"} (GPS → Unix)
 def headline(status: dict | None, error: str | None) -> dict  # {"text", "tone": "ok"|"warn"|"bad", "detail"}
-def alerts(status: dict) -> list[dict]                     # [{"key", "text", "tone"}] every true alert, unknown ones worded from the key
+def alerts(status: dict) -> list[dict]                     # [{"name", "text", "tone"}] (not "key": the server strips keys named like credentials) every true alert, unknown ones worded from the key
 def aim(status: dict) -> dict | None                       # dishes without motors; see below
 def facts(state: dict) -> list[list]                       # [[label, value_text], …] device, firmware, service, update, config …
 def explain(state: dict, now_unix: float) -> dict          # {"headline", "alerts", "aim", "facts"} for /api/state

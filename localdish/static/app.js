@@ -300,8 +300,8 @@
     $("alerts-card").hidden = !list.length;
     $("alerts").replaceChildren(...list.map((a) => {
       const li = node("li", toneClass(a.tone));
-      li.append(node("span", null, a.text || words(a.key || "alert")));
-      if (a.key) li.append(node("code", null, a.key));
+      li.append(node("span", null, a.text || words(a.name || "alert")));
+      if (a.name) li.append(node("code", null, a.name));
       return li;
     }));
   }

@@ -274,8 +274,8 @@ def alerts(status: dict) -> list[dict]:
         if on is not True:
             continue
         text, tone = ALERTS.get(key, (_words(key), "warn"))
-        out.append({"key": key, "text": text, "tone": tone})
-    out.sort(key=lambda a: (_TONE_ORDER[a["tone"]], a["key"]))
+        out.append({"name": key, "text": text, "tone": tone})
+    out.sort(key=lambda a: (_TONE_ORDER[a["tone"]], a["name"]))
     return out
 
 

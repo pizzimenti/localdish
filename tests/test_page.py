@@ -178,9 +178,7 @@ class TestExampleReplies(unittest.TestCase):
         def walk(o, where):
             if isinstance(o, dict):
                 for k, v in o.items():
-                    # explain.alerts[].key names the alert, not a credential (and the server's stripping would drop it)
-                    if not (where == "state.explain.alerts" and k == "key"):
-                        self.assertIsNone(pattern.search(str(k)), f"{where}.{k}")
+                    self.assertIsNone(pattern.search(str(k)), f"{where}.{k}")
                     walk(v, f"{where}.{k}")
             elif isinstance(o, list):
                 for v in o:

@@ -178,6 +178,9 @@ class DemoEndToEndTest(unittest.TestCase):
             self.assertIsNotNone(state["router"]["status"])
             self.assertTrue(state["dish"]["location_error"].startswith("PERMISSION_DENIED"))
             self.assertTrue(state["explain"]["headline"]["text"])
+            # the server's credential stripping must not eat our own fields (it once ate alerts[].key)
+            self.assertTrue(state["explain"]["alerts"])
+            self.assertTrue(all(a.get("name") for a in state["explain"]["alerts"]))
 
             deadline = time.time() + 5
             while get("/api/history")[1]["ring"] is None and time.time() < deadline:

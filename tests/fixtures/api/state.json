@@ -826,7 +826,7 @@
      "latencyMs": null,
      "target": {
       "address": "209.197.29.1",
-      "location": "S\u00e3o Paulo",
+      "location": "São Paulo",
       "service": "Counter-Strike: GO"
      }
     },
@@ -979,7 +979,7 @@
      "latencyMs": 214.9622,
      "target": {
       "address": "dynamodb.sa-east-1.amazonaws.com",
-      "location": "S\u00e3o Paulo",
+      "location": "São Paulo",
       "service": "Fortnite"
      }
     },
@@ -1034,7 +1034,7 @@
   "headline": {
    "text": "online",
    "tone": "ok",
-   "detail": "19 ms to starlink \u00b7 update pending, restarts ~03:54"
+   "detail": "19 ms to starlink · update pending, restarts ~03:54"
   },
   "alerts": [
    {
@@ -1051,8 +1051,8 @@
    "tilt_deg": -0.4314499999999981,
    "ok": false,
    "text": [
-    "turn it 11\u00b0 to the left, standing behind it",
-    "tilt is fine (0\u00b0 off)"
+    "turn it 11° to the left, standing behind it",
+    "tilt is fine (0° off)"
    ],
    "confidence": "FILTER_CONVERGED",
    "uncertainty_deg": 0.72698814
@@ -1116,7 +1116,7 @@
    ],
    [
     "power save",
-    "on, 09:00\u201313:00"
+    "on, 09:00–13:00"
    ],
    [
     "location sharing",
@@ -1147,15 +1147,15 @@
     "3 h 1 min"
    ],
    [
-    "router \u2192 dish",
+    "router → dish",
     "0.5 ms"
    ],
    [
-    "router \u2192 Starlink",
+    "router → Starlink",
     "17 ms, 1.7 % lost over 5 min"
    ],
    [
-    "router \u2192 internet",
+    "router → internet",
     "31 ms, 6.7 % lost over 5 min"
    ]
   ]
