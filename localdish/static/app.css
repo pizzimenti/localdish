@@ -119,6 +119,13 @@ button { cursor: pointer; }
 /* aim */
 .aim { display: grid; grid-template-columns: 11rem minmax(0, 1fr); gap: 1.25rem; align-items: center; }
 .aim svg { width: 100%; height: auto; display: block; }
+.aim-ring { fill: none; stroke: var(--border); }
+.aim-label { fill: var(--muted); font: 600 11px var(--sans); }
+.aim-turn { fill: none; stroke: var(--c); }
+.aim-hub { fill: var(--fg); }
+.arrow line { stroke: var(--c); }
+.arrow path { fill: var(--c); }
+.legend .k-empty { border: 1px solid var(--border); }
 .aim ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 0.4rem; font-size: 0.9rem; }
 .aim-nums { margin-top: 0.75rem; font-size: 0.75rem; color: var(--muted); }
 
@@ -127,18 +134,23 @@ button { cursor: pointer; }
 .alerts li { display: flex; align-items: center; gap: 0.6rem; padding: 0.65rem 0.8rem; border: 1px solid; border-radius: 0.8rem; font-size: 0.8125rem; }
 .alerts li code { margin-left: auto; font-size: 0.6875rem; opacity: 0.7; }
 
+/* colour keys: a class sets --c, and each mark takes its colour from it (no style attributes under the CSP) */
+.k-ok { --c: var(--ok); } .k-bad { --c: var(--bad); } .k-warn { --c: var(--warn); } .k-sky { --c: var(--sky); }
+.k-violet { --c: var(--violet); } .k-fg { --c: var(--fg); } .k-empty { --c: var(--map-empty); }
+
 /* graphs */
 .chart + .chart { margin-top: 1.25rem; }
 .chart-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; font-size: 0.75rem; }
 .chart-head b { font-weight: 650; }
 .chart-now { font-family: var(--mono); font-variant-numeric: tabular-nums; }
 .chart-now i { font-style: normal; color: var(--muted); }
-.chart-now .sw { display: inline-block; width: 0.55rem; height: 0.55rem; border-radius: 2px; margin: 0 0.25rem 0 0.6rem; }
+.chart-now .sw { background: var(--c); display: inline-block; width: 0.55rem; height: 0.55rem; border-radius: 2px; margin: 0 0.25rem 0 0.6rem; }
 .chart-svg { display: block; width: 100%; height: 8.5rem; margin-top: 0.5rem; overflow: visible; }
 .chart-svg .grid { stroke: var(--border); stroke-width: 1; }
 .chart-svg .tick { fill: var(--muted); font: 10px var(--mono); }
-.chart-svg .line { fill: none; stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round; }
-.chart-svg .area { stroke: none; opacity: 0.18; }
+.chart-svg .line { stroke: var(--c); fill: none; stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round; }
+.chart-svg .area { fill: var(--c); stroke: none; opacity: 0.18; }
+.chart-empty { margin-top: 0.5rem; }
 
 /* outages, events, clients */
 .rows { display: grid; margin: 0; padding: 0; list-style: none; font-size: 0.8125rem; }
@@ -158,6 +170,7 @@ td { padding: 0.65rem 0.6rem; border-top: 1px solid var(--border); white-space: 
 td:first-child, th:first-child { padding-left: 0; }
 td.name { min-width: 7rem; white-space: normal; overflow-wrap: break-word; }
 td.name small { white-space: nowrap; }
+tr.dead td { color: var(--muted); opacity: 0.7; }
 td small { display: block; color: var(--muted); font-size: 0.6875rem; }
 .bars { display: inline-flex; gap: 2px; align-items: flex-end; height: 0.8rem; margin-right: 0.4rem; vertical-align: -1px; }
 .bars span { width: 3px; border-radius: 1px; background: var(--border); }
@@ -167,7 +180,7 @@ td small { display: block; color: var(--muted); font-size: 0.6875rem; }
 .map-wrap { display: grid; justify-items: center; gap: 0.75rem; }
 #obstruction-canvas { width: min(100%, 22rem); aspect-ratio: 1; border-radius: 50%; background: var(--map-empty); box-shadow: inset 0 0 3rem rgba(0, 0, 0, 0.5), 0 16px 40px rgba(0, 0, 0, 0.2); }
 .legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.35rem 1rem; font-size: 0.6875rem; color: var(--muted); }
-.legend i { display: inline-block; width: 0.6rem; height: 0.6rem; border-radius: 2px; margin-right: 0.35rem; vertical-align: -1px; }
+.legend i { background: var(--c); display: inline-block; width: 0.6rem; height: 0.6rem; border-radius: 2px; margin-right: 0.35rem; vertical-align: -1px; }
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; min-height: 2.1rem; padding: 0.35rem 0.9rem;
   border: 1px solid var(--border); border-radius: 0.65rem; background: var(--card-2); font-size: 0.8125rem; font-weight: 600;

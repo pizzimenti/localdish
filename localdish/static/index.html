@@ -92,9 +92,9 @@
       <div class="map-wrap">
         <canvas id="obstruction-canvas" width="360" height="360" role="img" aria-label="obstruction map, zenith in the centre"></canvas>
         <div class="legend">
-          <span><i style="background: var(--ok)"></i>clear</span>
-          <span><i style="background: var(--bad)"></i>obstructed</span>
-          <span><i style="background: var(--map-empty); border: 1px solid var(--border)"></i>no data yet</span>
+          <span><i class="k-ok"></i>clear</span>
+          <span><i class="k-bad"></i>obstructed</span>
+          <span><i class="k-empty"></i>no data yet</span>
         </div>
         <p id="map-note" class="summary num"></p>
       </div>
@@ -110,6 +110,20 @@
       <table>
         <thead><tr><th>name</th><th>band</th><th>signal</th><th class="clients-rate">rate</th><th>connected</th></tr></thead>
         <tbody id="clients"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="ping-card" class="card" hidden>
+    <div class="card-head">
+      <div><p class="eyebrow">router</p><h2>ping test</h2></div>
+      <span id="ping-age" class="age"></span>
+    </div>
+    <p id="ping-summary" class="summary num"></p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>service</th><th>where</th><th>latency</th><th>loss</th></tr></thead>
+        <tbody id="ping-rows"></tbody>
       </table>
     </div>
   </section>

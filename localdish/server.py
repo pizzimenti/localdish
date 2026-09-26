@@ -18,6 +18,11 @@ SECRET = re.compile(r"(?i)(password|passphrase|psk|secret|token|key)$")
 STATIC_NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]*$")
 MAX_BODY = 64 * 1024
 
+# The page loads only its own files and talks only to this server. No inline script or style (colours come from
+# classes; the favicon is a data: URL), no frames, no forms that navigate, no base tag.
+CSP = ("default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self'; "
+       "base-uri 'none'; form-action 'none'; frame-ancestors 'none'")
+
 TYPES = {
     ".html": "text/html; charset=utf-8",
     ".js": "text/javascript; charset=utf-8",
@@ -68,6 +73,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Cache-Control", "no-store")
         self.send_header("X-Content-Type-Options", "nosniff")
         self.send_header("Referrer-Policy", "no-referrer")
+        self.send_header("Content-Security-Policy", CSP)
         if self.close_connection:
             self.send_header("Connection", "close")
         self.end_headers()

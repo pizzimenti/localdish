@@ -427,8 +427,10 @@ class Poller:
             }
             if self.devices.get("router") is not None:
                 r = self._slots["router"]
+                ping_t = r["ping"].ok_t     # ping runs only on the button, so the page needs to know how old it is
                 state["router"] = {"status": r["status"].value, "clients": r["clients"].value,
-                                   "device_info": r["device_info"].value, "ping": r["ping"].value}
+                                   "device_info": r["device_info"].value, "ping": r["ping"].value,
+                                   "ping_age_s": None if ping_t is None else round(now - ping_t, 1)}
         return state
 
     def state(self) -> dict:

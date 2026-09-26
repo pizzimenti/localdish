@@ -273,8 +273,11 @@ class ControlTest(unittest.TestCase):
 
     def test_ping_result_kept(self):
         p, _, _, _ = make(router_answers={"get_ping": {"results": {"x": {"latencyMs": 20.5}}}})
+        self.assertIsNone(p.state()["router"]["ping_age_s"])
         self.assertEqual(p.control("ping", {})[0], 200)
-        self.assertEqual(p.state()["router"]["ping"], {"results": {"x": {"latencyMs": 20.5}}})
+        router = p.state()["router"]
+        self.assertEqual(router["ping"], {"results": {"x": {"latencyMs": 20.5}}})
+        self.assertIsInstance(router["ping_age_s"], float)
 
     def test_controls_listed_with_current_values(self):
         p, _, _, _ = make({"dish_get_config": {"dish_config": {"snow_melt_mode": "AUTO"}}})

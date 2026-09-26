@@ -24,7 +24,7 @@ READS = {
         "dish.status.device_state.uptime_s", "dish.status.eth_speed_mbps", "dish.status.is_snr_above_noise_floor",
         "dish.status.gps_stats.gps_sats", "dish.status.gps_stats.gps_valid", "dish.status.alerts",
         "dish.device_info", "dish.config", "dish.diagnostics", "dish.location?", "dish.location_error?",
-        "router.status", "router.device_info", "router.ping",
+        "router.status", "router.device_info", "router.ping.results", "router.ping_age_s?",
         "router.clients[].name", "router.clients[].iface",
         "explain.headline.text", "explain.headline.tone", "explain.headline.detail",
         "explain.alerts[].text", "explain.alerts[].tone",
@@ -110,6 +110,15 @@ class TestStaticFiles(unittest.TestCase):
         self.assertNotRegex(js, r"\beval\s*\(")
         self.assertNotRegex(js, r"new\s+Function\s*\(")
         self.assertIn("<dialog", text("index.html"))
+
+    def test_nothing_inline_the_csp_would_block(self):
+        html, js = text("index.html"), text("app.js")
+        self.assertNotRegex(html, r"\sstyle\s*=", "inline style attribute")
+        self.assertNotRegex(html, r"\son[a-z]+\s*=", "inline event handler")
+        self.assertEqual(re.findall(r"<script(?![^>]*\bsrc=)[^>]*>", html), [], "inline script")
+        self.assertNotIn("<style", html)
+        self.assertNotRegex(js, r"""style\s*=\s*\\?["']""", "a style attribute written from app.js")
+        self.assertNotRegex(js, r"javascript:")
 
     def test_page_loads_its_own_files(self):
         html = text("index.html")

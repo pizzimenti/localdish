@@ -99,6 +99,7 @@ class ServerTest(unittest.TestCase):
         status, headers, raw = self.request("GET", "/api/state")
         self.assertEqual(status, 200)
         self.assertEqual(headers["Cache-Control"], "no-store")
+        self.assertEqual(headers["Content-Security-Policy"], server.CSP)
         self.assertTrue(headers["Content-Type"].startswith("application/json"))
         state = json.loads(raw)
         st = state["dish"]["status"]
@@ -179,6 +180,11 @@ class ServerTest(unittest.TestCase):
                 self.assertEqual((status, headers["Content-Type"]), (200, "text/html; charset=utf-8"))
                 self.assertEqual(headers["Cache-Control"], "no-store")
                 self.assertIn(b"localdish", raw)
+                csp = headers["Content-Security-Policy"]
+                for part in ("default-src 'self'", "script-src 'self'", "style-src 'self'", "connect-src 'self'",
+                             "img-src 'self' data:", "base-uri 'none'", "form-action 'none'", "frame-ancestors 'none'"):
+                    self.assertIn(part, csp)
+                self.assertNotIn("unsafe", csp)
                 status, headers, _ = self.request("GET", "/app.js")
                 self.assertEqual((status, headers["Content-Type"]), (200, "text/javascript; charset=utf-8"))
                 self.assertEqual(self.request("GET", "/static/app.js")[0], 200)

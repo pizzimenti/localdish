@@ -272,24 +272,25 @@
     // top-down: north up, clockwise; the now arrow in the text colour, the wanted one in green, the turn between them
     const c = 80, r = 60;
     const pt = (az, rr) => [c + rr * Math.sin(az * Math.PI / 180), c - rr * Math.cos(az * Math.PI / 180)];
+    // colours come from classes (k-ok, k-fg …), never style attributes: the page runs under style-src 'self'
     const arrow = (az, colour, dash) => {
       const [x, y] = pt(az, r - 6), [hx1, hy1] = pt(az - 7, r - 16), [hx2, hy2] = pt(az + 7, r - 16);
-      return '<line x1="' + c + '" y1="' + c + '" x2="' + x.toFixed(1) + '" y2="' + y.toFixed(1) + '" style="stroke:' + colour + '" stroke-width="3" stroke-linecap="round"' + (dash ? ' stroke-dasharray="5 4"' : "") + "/>" +
-        '<path d="M' + x.toFixed(1) + " " + y.toFixed(1) + "L" + hx1.toFixed(1) + " " + hy1.toFixed(1) + "L" + hx2.toFixed(1) + " " + hy2.toFixed(1) + 'Z" style="fill:' + colour + '"/>';
+      return '<g class="arrow k-' + colour + '"><line x1="' + c + '" y1="' + c + '" x2="' + x.toFixed(1) + '" y2="' + y.toFixed(1) + '" stroke-width="3" stroke-linecap="round"' + (dash ? ' stroke-dasharray="5 4"' : "") + "/>" +
+        '<path d="M' + x.toFixed(1) + " " + y.toFixed(1) + "L" + hx1.toFixed(1) + " " + hy1.toFixed(1) + "L" + hx2.toFixed(1) + " " + hy2.toFixed(1) + 'Z"/></g>';
     };
-    let svg = '<svg viewBox="0 0 160 160" role="img"><circle cx="80" cy="80" r="' + r + '" fill="none" style="stroke:var(--border)" stroke-width="1.5"/>';
+    let svg = '<svg viewBox="0 0 160 160" role="img"><circle class="aim-ring" cx="80" cy="80" r="' + r + '" stroke-width="1.5"/>';
     for (const [lab, az] of [["N", 0], ["E", 90], ["S", 180], ["W", 270]]) {
       const [x, y] = pt(az, r + 11);
-      svg += '<text x="' + x.toFixed(1) + '" y="' + (y + 4).toFixed(1) + '" text-anchor="middle" style="fill:var(--muted);font:600 11px var(--sans)">' + lab + "</text>";
+      svg += '<text x="' + x.toFixed(1) + '" y="' + (y + 4).toFixed(1) + '" text-anchor="middle" class="aim-label">' + lab + "</text>";
     }
     if (isNum(a.turn_deg) && Math.abs(a.turn_deg) >= 0.5) {
       const [x1, y1] = pt(a.az_now, r - 22), [x2, y2] = pt(a.az_now + a.turn_deg, r - 22);
       svg += '<path d="M' + x1.toFixed(1) + " " + y1.toFixed(1) + "A" + (r - 22) + " " + (r - 22) + " 0 0 " + (a.turn_deg > 0 ? 1 : 0) + " " + x2.toFixed(1) + " " + y2.toFixed(1) +
-        '" fill="none" style="stroke:' + (a.ok ? "var(--ok)" : "var(--warn)") + '" stroke-width="2"/>';
+        '" class="aim-turn k-' + (a.ok ? "ok" : "warn") + '" stroke-width="2"/>';
     }
-    if (isNum(a.az_want)) svg += arrow(a.az_want, "var(--ok)", true);
-    if (isNum(a.az_now)) svg += arrow(a.az_now, "var(--fg)", false);
-    svg += '<circle cx="80" cy="80" r="3.5" style="fill:var(--fg)"/></svg>';
+    if (isNum(a.az_want)) svg += arrow(a.az_want, "ok", true);
+    if (isNum(a.az_now)) svg += arrow(a.az_now, "fg", false);
+    svg += '<circle class="aim-hub" cx="80" cy="80" r="3.5"/></svg>';
     $("aim-svg").innerHTML = svg;
   }
 
@@ -336,10 +337,10 @@
     let head = '<div class="chart-head"><b>' + esc(title) + '</b><span class="chart-now">';
     for (const s of series) {
       const lastV = [...s.values].reverse().find(isNum);
-      head += '<span class="sw" style="background:' + s.colour + '"></span>' + (series.length > 1 ? "<i>" + esc(s.label) + " </i>" : "") + esc(lastV === undefined ? "—" : s.fmt(lastV));
+      head += '<span class="sw k-' + s.colour + '"></span>' + (series.length > 1 ? "<i>" + esc(s.label) + " </i>" : "") + esc(lastV === undefined ? "—" : s.fmt(lastV));
     }
     head += "</span></div>";
-    if (n < 2) { box.innerHTML = head + '<div class="empty" style="margin-top:.5rem">no samples yet</div>'; return; }
+    if (n < 2) { box.innerHTML = head + '<div class="empty chart-empty">no samples yet</div>'; return; }
 
     let svg = '<svg class="chart-svg" viewBox="0 0 ' + W + " " + Ht + '" role="img" aria-label="' + esc(title) + ' over the last ' + esc(fmtDur(n)) + '">';
     for (let v = lo; v <= hi + step / 1e6; v += step) {
@@ -363,8 +364,8 @@
         if (first === null) first = x;
         last = x;
       });
-      if (opts.area && first !== null) area = '<path class="area" d="' + d + "L" + last + " " + (T + ph) + "L" + first + " " + (T + ph) + 'Z" style="fill:' + s.colour + '"/>';
-      svg += area + '<path class="line" d="' + d + '" style="stroke:' + s.colour + '"/>';
+      if (opts.area && first !== null) area = '<path d="' + d + "L" + last + " " + (T + ph) + "L" + first + " " + (T + ph) + 'Z" class="area k-' + s.colour + '"/>';
+      svg += area + '<path class="line k-' + s.colour + '" d="' + d + '"/>';
     }
     if (peak !== null) svg += '<text class="tick" x="' + (L + 6) + '" y="' + (T + 9) + '">peaks to ' + esc(opts.tick(peak)) + " cut off</text>";
     box.innerHTML = head + svg + "</svg>";
@@ -374,16 +375,16 @@
     const ring = (H && H.ring) || {};
     const v = (k) => Array.isArray(ring[k]) ? ring[k] : [];
     const toMb = (a) => a.map((x) => isNum(x) ? x / 1e6 : null);
-    drawChart($("chart-latency"), "pop latency", [{ label: "latency", values: v("latency_ms"), colour: "var(--sky)", fmt: fmtMs }],
+    drawChart($("chart-latency"), "pop latency", [{ label: "latency", values: v("latency_ms"), colour: "sky", fmt: fmtMs }],
       { min: 0, clip: true, tick: (x) => x.toFixed(0) + " ms" });
-    drawChart($("chart-loss"), "ping loss", [{ label: "loss", values: v("drop").map((x) => isNum(x) ? x * 100 : null), colour: "var(--bad)", fmt: (x) => x.toFixed(0) + " %" }],
+    drawChart($("chart-loss"), "ping loss", [{ label: "loss", values: v("drop").map((x) => isNum(x) ? x * 100 : null), colour: "bad", fmt: (x) => x.toFixed(0) + " %" }],
       { min: 0, max: 100, area: true, tick: (x) => x.toFixed(0) + " %" });
     const mb = (x) => (x < 1 ? x.toFixed(2) : x < 10 ? x.toFixed(1) : x.toFixed(0)) + " Mb/s";
     drawChart($("chart-throughput"), "throughput", [
-      { label: "down", values: toMb(v("down_bps")), colour: "var(--ok)", fmt: mb },
-      { label: "up", values: toMb(v("up_bps")), colour: "var(--violet)", fmt: mb }],
+      { label: "down", values: toMb(v("down_bps")), colour: "ok", fmt: mb },
+      { label: "up", values: toMb(v("up_bps")), colour: "violet", fmt: mb }],
       { min: 0, tick: (x) => (x < 10 && x % 1 ? x.toFixed(1) : x.toFixed(0)) + " Mb/s" });
-    drawChart($("chart-power"), "dish power", [{ label: "power", values: v("power_w"), colour: "var(--warn)", fmt: fmtW }],
+    drawChart($("chart-power"), "dish power", [{ label: "power", values: v("power_w"), colour: "warn", fmt: fmtW }],
       { min: 0, tick: (x) => x.toFixed(0) + " W" });
   }
 
@@ -521,6 +522,45 @@
     }));
   }
 
+  // ---- ping test ------------------------------------------------------------------------------------------------
+
+  // router.ping = {results: {address: {latencyMs|null, dropRate, target: {service, location, address}}}}, filled only
+  // when the ping control runs; router.ping_age_s says how long ago
+  function renderPing() {
+    const card = $("ping-card");
+    card.hidden = !S.router;
+    if (!S.router) return;
+    const results = S.router.ping && S.router.ping.results;
+    const age = ageOf(S.router.ping_age_s, got.state);
+    $("ping-age").textContent = age === null ? "" : "ran " + fmtAgo(age);
+    const tbody = $("ping-rows");
+    if (!results || typeof results !== "object" || !Object.keys(results).length) {
+      $("ping-summary").textContent = "";
+      const tr = node("tr"), td = node("td", "muted", "no results yet: run the ping test under controls");
+      td.colSpan = 4; tr.append(td); tbody.replaceChildren(tr);
+      return;
+    }
+    // a zero drop rate is left off the wire, so a missing one is 0; no latency means nothing came back
+    const rows = Object.keys(results).map((addr) => {
+      const r = results[addr] || {}, t = r.target || {};
+      const drop = isNum(r.dropRate) ? r.dropRate : 0;
+      return { service: t.service || addr, where: t.location || "", addr: t.address || addr,
+               ms: isNum(r.latencyMs) ? r.latencyMs : null, drop: drop, dead: !isNum(r.latencyMs) || drop >= 1 };
+    });
+    rows.sort((a, b) => (a.dead - b.dead) || (a.dead ? (a.service + a.where).localeCompare(b.service + b.where) : a.ms - b.ms));
+    const live = rows.filter((r) => !r.dead).map((r) => r.ms).sort((a, b) => a - b);
+    $("ping-summary").textContent = rows.length + " hosts · " + live.length + " answered" +
+      (live.length ? " · fastest " + fmtMs(live[0]) + " · median " + fmtMs(live[Math.floor(live.length / 2)]) : "");
+    tbody.replaceChildren(...rows.map((r) => {
+      const tr = node("tr", r.dead ? "dead" : "");
+      const svc = node("td", "name", r.service);
+      if (r.addr !== r.service) svc.append(node("small", "mono", r.addr));
+      tr.append(svc, node("td", null, r.where || "—"), node("td", null, r.ms === null ? "no answer" : fmtMs(r.ms)),
+        node("td", r.dead ? "" : r.drop > 0 ? "t-warn" : "", fmtPct(r.drop, 0)));
+      return tr;
+    }));
+  }
+
   // ---- controls ------------------------------------------------------------------------------------------------
 
   const GROUPS = ["restart", "settings", "maintenance", "tests"];
@@ -532,8 +572,7 @@
   const isChoice = (p) => Array.isArray(p.choices) || p.type === "enum" || p.type === "choice";
   const isClock = (p) => /start_minutes$/.test(p.name);
 
-  // a clock-time field shows a clock, so a label that explains "minutes after midnight" would only confuse
-  function labelOf(p) { const l = p.label || words(p.name); return isClock(p) ? l.replace(/,? ?minutes after midnight/, "") : l; }
+  function labelOf(p) { return p.label || words(p.name); }
 
   function showParam(p, v) {
     if (v === undefined || v === null) return "—";
@@ -638,11 +677,20 @@
     return (ctls[c.name] = ctl);
   }
 
+  // stow only exists on dishes with motors: on one the dish says has none, the control is left out rather than greyed
+  function hasNoMotors() {
+    const st = (S.dish && S.dish.status) || {};
+    const v = st.has_actuators || (st.alignment_stats && st.alignment_stats.has_actuators);
+    return v === "HAS_ACTUATORS_NO";
+  }
+
   function renderControls() {
     const list = Array.isArray(S.controls) ? S.controls : [];
+    const noMotors = hasNoMotors();
     for (const c of list) {
       const ctl = ctls[c.name] || buildControl(c);
       ctl.def = c;
+      ctl.root.hidden = c.name === "stow" && !c.available && noMotors;
       const cur = c.current || {};
       const params = c.params || [];
       ctl.now.textContent = params.some((p) => cur[p.name] !== undefined)
@@ -653,6 +701,7 @@
       ctl.reason.textContent = c.available ? "" : c.reason || "not available now";
       for (const k in ctl.inputs) ctl.inputs[k].el.disabled = ctl.busy || !c.available;
     }
+    for (const g of $("controls").children) g.hidden = ![...g.querySelectorAll(".control")].some((e) => !e.hidden);
     renderSpeedtest();
   }
 
@@ -786,6 +835,7 @@
     renderAim();
     renderAlerts();
     renderClients();
+    renderPing();
     renderControls();
     renderEvents();
     renderFacts();
