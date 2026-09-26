@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<title>localdish</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<main class="page">
+
+  <header class="top">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10a7.3 7.3 0 0 0 10 10z"/><path d="m9 15 3-3"/><path d="M17 13a6 6 0 0 0-6-6"/><path d="M21 13A10 10 0 0 0 11 3"/></svg>
+      </div>
+      <div>
+        <h1>localdish</h1>
+        <p id="headline-detail">connecting…</p>
+      </div>
+    </div>
+    <div class="top-meta">
+      <span id="headline" class="badge pill tone-warn">connecting</span>
+      <span id="demo-badge" class="badge tone-warn" hidden>demo data</span>
+      <span id="refreshed" class="num">refreshed —</span>
+      <span id="version" class="num"></span>
+    </div>
+  </header>
+
+  <div id="banner" class="banner" role="status" hidden></div>
+
+  <section id="live" class="metrics" aria-label="live"></section>
+
+  <section id="aim-card" class="card" hidden>
+    <div class="card-head">
+      <div><p class="eyebrow">aim</p><h2>pointing the dish</h2></div>
+      <span id="aim-state" class="badge"></span>
+    </div>
+    <div class="aim">
+      <div id="aim-svg" aria-hidden="true"></div>
+      <div>
+        <ul id="aim-text"></ul>
+        <p id="aim-nums" class="aim-nums num"></p>
+      </div>
+    </div>
+  </section>
+
+  <section id="alerts-card" class="card" hidden>
+    <div class="card-head"><div><p class="eyebrow">the dish says</p><h2>alerts</h2></div></div>
+    <ul id="alerts" class="alerts"></ul>
+  </section>
+
+  <div class="grid-2">
+    <section id="graph-card-1" class="card">
+      <div class="card-head">
+        <div><p class="eyebrow">last 15 min</p><h2>latency &amp; loss</h2></div>
+        <span id="history-age-1" class="age"></span>
+      </div>
+      <div id="chart-latency" class="chart"></div>
+      <div id="chart-loss" class="chart"></div>
+    </section>
+    <section id="graph-card-2" class="card">
+      <div class="card-head">
+        <div><p class="eyebrow">last 15 min</p><h2>throughput &amp; power</h2></div>
+        <span id="history-age-2" class="age"></span>
+      </div>
+      <div id="chart-throughput" class="chart"></div>
+      <div id="chart-power" class="chart"></div>
+    </section>
+  </div>
+
+  <div class="grid-2">
+    <section id="outages-card" class="card">
+      <div class="card-head">
+        <div><p class="eyebrow">what went wrong</p><h2>outages</h2></div>
+        <span id="outages-age" class="age"></span>
+      </div>
+      <p id="outages-summary" class="summary"></p>
+      <ul id="outages" class="rows"></ul>
+      <button id="outages-more" class="link-btn" type="button" hidden>show all</button>
+    </section>
+    <section id="map-card" class="card">
+      <div class="card-head">
+        <div><p class="eyebrow">sky view</p><h2>obstruction map</h2></div>
+        <div class="top-meta">
+          <span id="map-age" class="age"></span>
+          <button id="map-refresh" class="btn small" type="button">refresh</button>
+        </div>
+      </div>
+      <div class="map-wrap">
+        <canvas id="obstruction-canvas" width="360" height="360" role="img" aria-label="obstruction map, zenith in the centre"></canvas>
+        <div class="legend">
+          <span><i style="background: var(--ok)"></i>clear</span>
+          <span><i style="background: var(--bad)"></i>obstructed</span>
+          <span><i style="background: var(--map-empty); border: 1px solid var(--border)"></i>no data yet</span>
+        </div>
+        <p id="map-note" class="summary num"></p>
+      </div>
+    </section>
+  </div>
+
+  <section id="clients-card" class="card" hidden>
+    <div class="card-head">
+      <div><p class="eyebrow">router</p><h2>wifi clients</h2></div>
+      <span id="clients-age" class="age"></span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>name</th><th>band</th><th>signal</th><th>rate</th><th>connected</th></tr></thead>
+        <tbody id="clients"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="controls-card" class="card">
+    <div class="card-head"><div><p class="eyebrow">ask the gear to act</p><h2>controls</h2></div></div>
+    <div id="controls" class="controls"></div>
+  </section>
+
+  <div class="grid-2">
+    <section class="card">
+      <div class="card-head"><div><p class="eyebrow">this session</p><h2>events</h2></div></div>
+      <ul id="events" class="rows events"></ul>
+    </section>
+    <section class="card">
+      <div class="card-head"><div><p class="eyebrow">what it is</p><h2>facts</h2></div></div>
+      <dl id="facts" class="facts"></dl>
+    </section>
+  </div>
+
+  <section class="card">
+    <details id="raw" class="raw">
+      <summary>raw json: everything the devices said</summary>
+      <div id="raw-bar" class="raw-bar"></div>
+      <pre id="raw-json"></pre>
+    </details>
+  </section>
+
+  <footer id="footer">localdish runs on this computer and talks only to your dish and router.</footer>
+</main>
+
+<dialog id="confirm">
+  <form method="dialog">
+    <p class="eyebrow">are you sure?</p>
+    <h2 id="confirm-title"></h2>
+    <p id="confirm-text"></p>
+    <ul id="confirm-params"></ul>
+    <div class="dialog-buttons">
+      <button id="confirm-cancel" class="btn" value="cancel" type="submit">cancel</button>
+      <button id="confirm-ok" class="btn primary" value="ok" type="submit">do it</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="app.js"></script>
+</body>
+</html>
