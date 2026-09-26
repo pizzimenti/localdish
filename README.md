@@ -36,7 +36,8 @@ then `localdish`.
 - **the last 15 minutes:** latency and packet loss, throughput and power, every outage with its cause.
 - **obstruction map:** what the dish has seen of the sky.
 - **aim helper:** for dishes without motors (the Mini, for example), where the dish points now against where it
-  wants to point: "turn it about 11° to the left".
+  wants to point: "turn it about 11° to the left". While the dish is searching the sky it keeps showing the last
+  reading, marked with its age.
 - **wifi clients:** who is on the router, their signal and band.
 - **ping:** the router's latency and loss to well-known services around the world.
 - **everything else:** every field the dish and router report, one click away as raw data.

@@ -343,6 +343,20 @@ Sections, top to bottom:
 Interface text is lowercase except proper names. Numbers carry units. Staleness shows: if `age_s` > 5, the card dims
 and says how old it is.
 
+**Settled while building (page piece):**
+- Staleness limits per source, not one flat 5 s: dish 5 s, history 15 s, router 75 s, map 150 s. The age shown is the
+  server's `age_s` plus the time since the page last heard from the server, so everything dims by itself when
+  localdish stops answering.
+- The latency graph caps its scale at 4× the 90th percentile when the peak is more than 5× it, and prints "peaks to N
+  ms cut off". An obstructed Mini had ~5 % of samples at 0.4–1.3 s, which flattened the usual 20–30 ms.
+- With a status in hand, a missing `pop_ping_drop_rate` is 0 % (the proto3 default). The signal card is good/weak from
+  `is_snr_above_noise_floor`.
+- Map orientation label: "north up" for FRAME_EARTH, "turned with the dish" for FRAME_UT (N drawn only for EARTH). This
+  is a reading of the frame names, not yet verified against a dish.
+- `*_start_minutes` params render as a time input sent as minutes. Other `*_minutes` params show "= 4 h 0 min". Values
+  you have edited are not overwritten by the 1 s poll until you send them.
+- Polling is single-flight per endpoint. Returning to a visible tab asks only for what is due.
+
 ## fixtures
 
 `localdish/demo/mini.json` (a Starlink Mini, firmware 2026.05) and `tests/fixtures/standard.json` (a standard
