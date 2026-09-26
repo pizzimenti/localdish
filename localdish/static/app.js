@@ -261,7 +261,10 @@
     $("aim-card").hidden = !a;
     if (!a) return;
     const state = $("aim-state");
-    if (a.ok === true) { state.textContent = "aimed well"; state.className = "badge tone-ok"; }
+    // a held reading (the dish is searching and not saying where it wants to point) is shown dimmed, badged as such
+    $("aim-card").classList.toggle("stale", a.held_s != null);
+    if (a.held_s != null) { state.textContent = "last reading"; state.className = "badge tone-warn"; }
+    else if (a.ok === true) { state.textContent = "aimed well"; state.className = "badge tone-ok"; }
     else if (a.ok === false) { state.textContent = "needs a nudge"; state.className = "badge tone-warn"; }
     else { state.textContent = words(a.confidence || "not converged"); state.className = "badge tone-warn"; }
 
