@@ -1,0 +1,19 @@
+name: test
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.9", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: unit tests (offline, standard library only)
+        run: python -m unittest discover -s tests -q
+      - name: the installed package carries its page and demo
+        run: |
+          python -m pip install --quiet .
+          cd /tmp && python -c "import importlib.resources as r, localdish; p = r.files('localdish'); assert (p / 'demo' / 'mini.json').is_file(); print('localdish', localdish.__version__, 'installed with', sorted(x.name for x in p.iterdir()))"
