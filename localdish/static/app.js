@@ -10,6 +10,7 @@
   const TIMEOUT_MS = 8000;
   const CONTROL_TIMEOUT_MS = 30000;
   const OUTAGES_SHOWN = 12;
+  const PING_SHOWN = 10;
 
   let S = null, H = null, O = null;                        // the last good /api/state, /api/history, /api/obstruction
   const got = { state: 0, history: 0, obstruction: 0 };     // Date.now() when each arrived
@@ -334,7 +335,7 @@
     const X = (i) => L + (n < 2 ? pw : i / (n - 1) * pw);
     const Y = (v) => T + ph - (v - lo) / (hi - lo || 1) * ph;
 
-    let head = '<div class="chart-head"><b>' + esc(title) + '</b><span class="chart-now">';
+    let head = '<div class="chart-head"><b>' + esc(title) + (peak !== null ? ' <i class="chart-cut">peaks to ' + esc(opts.tick(peak)) + " cut off</i>" : "") + '</b><span class="chart-now">';
     for (const s of series) {
       const lastV = [...s.values].reverse().find(isNum);
       head += '<span class="sw k-' + s.colour + '"></span>' + (series.length > 1 ? "<i>" + esc(s.label) + " </i>" : "") + esc(lastV === undefined ? "—" : s.fmt(lastV));
@@ -367,7 +368,6 @@
       if (opts.area && first !== null) area = '<path d="' + d + "L" + last + " " + (T + ph) + "L" + first + " " + (T + ph) + 'Z" class="area k-' + s.colour + '"/>';
       svg += area + '<path class="line k-' + s.colour + '" d="' + d + '"/>';
     }
-    if (peak !== null) svg += '<text class="tick" x="' + (L + 6) + '" y="' + (T + 9) + '">peaks to ' + esc(opts.tick(peak)) + " cut off</text>";
     box.innerHTML = head + svg + "</svg>";
   }
 
@@ -526,6 +526,7 @@
 
   // router.ping = {results: {address: {latencyMs|null, dropRate, target: {service, location, address}}}}, filled only
   // when the ping control runs; router.ping_age_s says how long ago
+  let showAllPings = false;
   function renderPing() {
     const card = $("ping-card");
     card.hidden = !S.router;
@@ -551,7 +552,10 @@
     const live = rows.filter((r) => !r.dead).map((r) => r.ms).sort((a, b) => a - b);
     $("ping-summary").textContent = rows.length + " hosts · " + live.length + " answered" +
       (live.length ? " · fastest " + fmtMs(live[0]) + " · median " + fmtMs(live[Math.floor(live.length / 2)]) : "");
-    tbody.replaceChildren(...rows.map((r) => {
+    const more = $("ping-more");
+    more.hidden = rows.length <= PING_SHOWN;
+    more.textContent = showAllPings ? "show fewer" : "show all " + rows.length;
+    tbody.replaceChildren(...(showAllPings ? rows : rows.slice(0, PING_SHOWN)).map((r) => {
       const tr = node("tr", r.dead ? "dead" : "");
       const svc = node("td", "name", r.service);
       if (r.addr !== r.service) svc.append(node("small", "mono", r.addr));
@@ -854,6 +858,7 @@
     for (const k in loops) document.visibilityState === "visible" ? loops[k].wake() : loops[k].sleep();
   });
   $("outages-more").addEventListener("click", () => { showAllOutages = !showAllOutages; renderOutages(); });
+  $("ping-more").addEventListener("click", () => { showAllPings = !showAllPings; if (S) renderPing(); });
   $("map-refresh").addEventListener("click", refreshMap);
   $("raw").addEventListener("toggle", () => { rawText = ""; renderRaw(); });
 

@@ -142,6 +142,7 @@ button { cursor: pointer; }
 .chart + .chart { margin-top: 1.25rem; }
 .chart-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; font-size: 0.75rem; }
 .chart-head b { font-weight: 650; }
+.chart-cut { font-style: normal; font-weight: 400; color: var(--muted); margin-left: 0.4rem; }
 .chart-now { font-family: var(--mono); font-variant-numeric: tabular-nums; }
 .chart-now i { font-style: normal; color: var(--muted); }
 .chart-now .sw { background: var(--c); display: inline-block; width: 0.55rem; height: 0.55rem; border-radius: 2px; margin: 0 0.25rem 0 0.6rem; }
@@ -170,6 +171,8 @@ td { padding: 0.65rem 0.6rem; border-top: 1px solid var(--border); white-space: 
 td:first-child, th:first-child { padding-left: 0; }
 td.name { min-width: 7rem; white-space: normal; overflow-wrap: break-word; }
 td.name small { white-space: nowrap; }
+table.compact td { padding-top: 0.4rem; padding-bottom: 0.4rem; }
+table.compact td small { display: inline; margin-left: 0.5rem; }
 tr.dead td { color: var(--muted); opacity: 0.7; }
 td small { display: block; color: var(--muted); font-size: 0.6875rem; }
 .bars { display: inline-flex; gap: 2px; align-items: flex-end; height: 0.8rem; margin-right: 0.4rem; vertical-align: -1px; }
@@ -252,5 +255,6 @@ footer { text-align: center; font-size: 0.6875rem; color: var(--muted); }
   .controls { grid-template-columns: minmax(0, 1fr); }
   .facts div { grid-template-columns: 8rem minmax(0, 1fr); }
   .clients-rate { display: none; }
+  table.compact td small { display: none; }
   .card { padding: 1rem; }
 }
