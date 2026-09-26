@@ -130,6 +130,21 @@ class Device:
 - A non-zero grpc-status raises `GrpcError`. The response `status` field inside a successful body is left to callers.
 - Timeouts: default 5 s; callers pass 20 s for history and the obstruction map.
 
+**Settled while building (wire piece):**
+- `Field` (from `Schema.fields()`) has `name, number, kind` (descriptor.proto type names), `type_name` (full name, no
+  leading dot), `repeated, map, oneof, packed`. Unknown message or enum names raise KeyError. Encode raises ValueError.
+- Decode follows protobuf merge rules: a repeated singular message merges, the last oneof member wins, the last map key
+  wins. A map entry with no key or value gets the default, the only default ever filled in. A known number with the wrong
+  wire type and a field whose type is missing from the schema both become `"#n"`. Malformed input raises ValueError.
+- **NaN is kept by the decoder** (the reference keeps it too). The fixtures contain NaN, so **the server turns
+  non-finite floats into null** and dumps with `allow_nan=False`.
+- Client: before reusing an idle keep-alive, if the socket reads as EOF, reconnect first. That isn't a retry, because
+  nothing was sent. If a reply has no grpc-status anywhere, HTTP 200 counts as OK; any other HTTP status maps through
+  gRPC's table (404 → UNIMPLEMENTED, 503 → UNAVAILABLE). `grpc-message` is percent-decoded.
+- `Device.schema_loaded` (a time.time() stamp) changes on each (re)load; the poller compares it to log the event. A
+  GrpcError counts as "answered" for the 60 s unreachable clock. A failed refetch keeps the old schema.
+- Measured: history decode 15 ms (55 KB), map 2 ms, reflection parse 13–15 ms. A dish held one keep-alive across 6 s gaps.
+
 ### device.py (J4)
 
 ```python
