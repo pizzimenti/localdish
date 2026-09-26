@@ -275,6 +275,27 @@ POST /api/refresh/<obstruction|info|router|location>  → 200 {"ok": true} | 429
 A control for an unavailable action returns 409. A device error returns 502 with the grpc message. An
 UNIMPLEMENTED answer marks that control unavailable for the rest of the process.
 
+**Settled while building (serve piece):**
+- "—" in the "otherwise" column means not polled while nobody watches: history, map, diagnostics, location **and the
+  router batch**. router `get_device_info` still runs every 5 min. When a page starts watching, everything due runs at once.
+- While a device is unreachable, only its primary job runs (dish status, or the router batch). An OSError inside a batch
+  stops the rest of that batch. Intervals count from the last attempt, success or failure.
+- The poller calls `dev.call` itself (it needs per-job timeouts) and takes the one-of answer. A non-zero `status.code`
+  inside a Response body is raised as GrpcError. An op missing from this firmware's Request schema is UNIMPLEMENTED (which
+  retires a control). Other codec errors become INTERNAL "could not read the <device>'s reply to <op>".
+- Refresh rate limits count the job's own scheduled runs too (a map refresh 3 s after a fetch → 429, retry 7).
+  `refresh/info` includes router info. After any dish control, info is forced; after `share_location`, location is too.
+- `running.speedtest` = `{"started", "status", "done", "error"}`. The router's status shape is
+  `{status: {running, id, up: {throughputs_mbps[], err}, down: {…}}}`. Done when running goes false after being seen true,
+  or after 5 s never seen running, or at 90 s.
+- `reachable` is false before the first answer. Error text is lowercase ("connection refused", "timed out").
+- Static files are served at `/`, `/<name>` and `/static/<name>`: plain names only, no dotfiles, no `..`. Every reply
+  carries `Cache-Control: no-store`, `X-Content-Type-Options: nosniff` and `Referrer-Policy: no-referrer`. A missing Host
+  header is refused.
+- If explain raises, /api/state still answers, with a "localdish could not explain this" headline.
+- Headline events: on a tone change, at most once per 30 s for the same pair; a flip that reverts inside the window stays
+  silent.
+
 ### cli.py and demo.py (J2)
 
 ```
