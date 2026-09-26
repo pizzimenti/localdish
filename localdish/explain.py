@@ -424,5 +424,14 @@ def explain(state: dict, now_unix: float) -> dict:
     if link.get("reachable") is False and not error:
         error = "no answer"
     status = status if isinstance(status, dict) else None
+    held = _dict(state.get("dish")).get("aim_status")
+    pointed = aim(status) if status else None
+    if pointed is None and isinstance(held, dict) and status is not None:
+        # the dish is searching or hasn't said where it wants to point: show the last reading, marked with its age
+        pointed = aim(held)
+        if pointed is not None:
+            age = _num(_dict(state.get("dish")).get("aim_age_s"))
+            pointed["held_s"] = age
+            pointed["text"] = pointed["text"] + [f"as of {_duration(age)} ago — the dish isn't saying right now"]
     return {"headline": headline(status, error), "alerts": alerts(status or {}),
-            "aim": aim(status) if status else None, "facts": facts(state)}
+            "aim": pointed, "facts": facts(state)}

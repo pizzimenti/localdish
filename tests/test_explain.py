@@ -336,3 +336,27 @@ class ExplainTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class AimHoldTest(unittest.TestCase):
+    """A searching dish stops reporting where it wants to point; explain shows the last reading with its age."""
+
+    def test_held_aim_when_the_status_has_no_desired_boresight(self):
+        import json, os
+        m = json.load(open(os.path.join(os.path.dirname(__file__), "..", "localdish", "demo", "mini.json")))
+        good = m["dish"]["get_status"]["dish_get_status"]
+        searching = dict(good, alignment_stats={k: v for k, v in good["alignment_stats"].items() if not k.startswith("desired")})
+        state = {"dish": {"status": searching, "aim_status": good, "aim_age_s": 42},
+                 "localdish": {"dish": {"reachable": True}}}
+        out = explain.explain(state, 0)["aim"]
+        self.assertIsNotNone(out)
+        self.assertEqual(out["held_s"], 42)
+        self.assertIn("as of 42 s ago", out["text"][-1])
+        self.assertIn("11° to the left", out["text"][0])
+
+    def test_live_aim_wins_over_the_held_one(self):
+        import json, os
+        m = json.load(open(os.path.join(os.path.dirname(__file__), "..", "localdish", "demo", "mini.json")))
+        good = m["dish"]["get_status"]["dish_get_status"]
+        state = {"dish": {"status": good, "aim_status": good, "aim_age_s": 999}, "localdish": {"dish": {"reachable": True}}}
+        self.assertNotIn("held_s", explain.explain(state, 0)["aim"])

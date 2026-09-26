@@ -198,6 +198,10 @@ standing behind the dish". Elevation: positive `want − now` means tilt up, tow
 "confidence": attitude_estimation_state, "uncertainty_deg"}`. When the filter hasn't converged, say so instead of
 giving directions.
 
+**Holding the aim** (found live on an obstructed Mini): while the dish searches, its status drops the `desired_boresight_*`
+fields. The poller keeps the last status that had them (`state["dish"]["aim_status"]`, `aim_age_s`), and `explain` shows
+that reading when the live one has none, with `held_s` and a line "as of N ago — the dish isn't saying right now".
+
 **Settled while building (knowledge piece):**
 - `available` / `current` / `facts` / `explain` read the `/api/state` shape: `state["dish"]["status"|"config"|"device_info"]`,
   `state["router"]` (None = no router), `state["localdish"][device]["reachable"|"error"]`, and `state["running"]["speedtest"]`.

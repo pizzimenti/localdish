@@ -357,3 +357,16 @@ class HelpersTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class AimHoldTest(unittest.TestCase):
+    def test_the_last_status_with_a_desired_boresight_is_held(self):
+        p, *_ = make()
+        pointing = {"alignment_stats": {"desired_boresight_azimuth_deg": -18.0, "boresight_azimuth_deg": -7.0}}
+        searching = {"alignment_stats": {"boresight_azimuth_deg": -7.0}}
+        p._store("dish", "get_status", {"dish_get_status": pointing})
+        p._store("dish", "get_status", {"dish_get_status": searching})
+        dish = p.caches()["dish"]
+        self.assertEqual(dish["status"], searching)
+        self.assertEqual(dish["aim_status"], pointing)
+        self.assertIsNotNone(dish["aim_age_s"])

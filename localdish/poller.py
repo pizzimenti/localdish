@@ -157,6 +157,7 @@ class Poller:
         self._refreshed = {}
         self._unavailable = {}       # control name → why, for the rest of the process
         self._speedtest = None       # the public run state
+        self._aim = None             # (status, when): the last dish status that said where it wants to point
         self._st_polled = None
         self._st_seen_running = False
         self._stop = threading.Event()
@@ -338,6 +339,11 @@ class Poller:
         with self._lock:
             slot = self._slots[target][SLOTS[(target, op)]]
             slot.value, slot.ok_t, slot.error, slot.code = value, self.clock(), None, None
+            # a dish that is searching stops saying where it wants to point; keep the last status that did, so the
+            # aim helper holds its last reading (with its age) instead of vanishing on an obstructed site
+            if (target, op) == ("dish", "get_status") and isinstance(value, dict) \
+                    and "desired_boresight_azimuth_deg" in (value.get("alignment_stats") or {}):
+                self._aim = (value, slot.ok_t)
 
     def _store_error(self, target: str, op: str, exc: BaseException) -> None:
         with self._lock:
@@ -413,7 +419,9 @@ class Poller:
                               "dish": self._device_line("dish", now), "router": self._device_line("router", now)},
                 "dish": {"status": d["status"].value, "device_info": d["device_info"].value,
                          "config": d["config"].value, "diagnostics": d["diagnostics"].value,
-                         "location": d["location"].value, "location_error": d["location"].error},
+                         "location": d["location"].value, "location_error": d["location"].error,
+                         "aim_status": self._aim[0] if self._aim else None,
+                         "aim_age_s": now - self._aim[1] if self._aim else None},
                 "router": None,
                 "running": {"speedtest": dict(self._speedtest) if self._speedtest else None},
             }
