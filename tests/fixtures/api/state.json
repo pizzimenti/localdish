@@ -1,0 +1,1339 @@
+{
+ "localdish": {
+  "version": "0.1.0",
+  "now": 1790410265.44,
+  "demo": true,
+  "dish": {
+   "host": "192.168.100.1",
+   "reachable": true,
+   "error": null,
+   "age_s": 0.4,
+   "schema": true
+  },
+  "router": {
+   "host": "192.168.1.1",
+   "reachable": true,
+   "error": null,
+   "age_s": 12.1,
+   "schema": true
+  }
+ },
+ "dish": {
+  "status": {
+   "account_shard": "account_shard-demo-1",
+   "alerts": {
+    "install_pending": true
+   },
+   "alignment_stats": {
+    "attitude_estimation_state": "FILTER_CONVERGED",
+    "attitude_uncertainty_deg": 0.72698814,
+    "boresight_azimuth_deg": -7.144536,
+    "boresight_elevation_deg": 68.42079,
+    "desired_boresight_azimuth_deg": -17.962452,
+    "desired_boresight_elevation_deg": 67.98934,
+    "has_actuators": "HAS_ACTUATORS_NO",
+    "tilt_angle_deg": 23.521
+   },
+   "aps_stats": {},
+   "battery_stats": {},
+   "boresight_azimuth_deg": -7.144536,
+   "boresight_elevation_deg": 68.42079,
+   "class_of_service": "CONSUMER",
+   "config": {
+    "apply_asset_class": true,
+    "apply_level_dish_mode": true,
+    "apply_location_request_mode": true,
+    "apply_power_save_duration_minutes": true,
+    "apply_power_save_mode": true,
+    "apply_power_save_start_minutes": true,
+    "apply_snow_melt_mode": true,
+    "apply_swupdate_reboot_hour": true,
+    "apply_swupdate_three_day_deferral_enabled": true,
+    "power_save_duration_minutes": 240,
+    "power_save_mode": true,
+    "power_save_start_minutes": 540,
+    "snow_melt_mode": "ALWAYS_OFF",
+    "swupdate_reboot_hour": 3
+   },
+   "connected_routers": [
+    "Router-000000000000000000000001"
+   ],
+   "device_info": {
+    "bootcount": 3,
+    "build_id": "5c0319fb-fd2f-49fe-ae51-ca0ba981305f.uterm_catapult_manifest.release",
+    "country_code": "US",
+    "generation_number": 1779130246,
+    "hardware_version": "mini1_pez_proto1",
+    "id": "id-demo-1",
+    "software_version": "2026.05.13.mr80201",
+    "utc_offset_s": -28800
+   },
+   "device_state": {
+    "uptime_s": 11310
+   },
+   "disablement_code": "OKAY",
+   "dl_bandwidth_restricted_reason": "NO_LIMIT",
+   "downlink_throughput_bps": 608174.06,
+   "downstream_routers": {
+    "Router-000000000000000000000001": {
+     "last_seen": 1790410220006847410,
+     "role": "CONTROLLER"
+    }
+   },
+   "eth_speed_mbps": 1000,
+   "gps_stats": {
+    "gps_sats": 21,
+    "gps_valid": true
+   },
+   "has_actuators": "HAS_ACTUATORS_NO",
+   "has_signed_cals": true,
+   "initialization_duration_seconds": {
+    "attitude_initialization": 124,
+    "burst_detected": 65,
+    "ekf_converged": 242,
+    "first_cplane": 66,
+    "first_pop_ping": 79,
+    "gps_valid": 36,
+    "initial_network_entry": 65,
+    "network_schedule": 68,
+    "rf_ready": 23,
+    "stable_connection": 4427
+   },
+   "is_snr_above_noise_floor": true,
+   "mobility_class": "MOBILE",
+   "nat_flag": "NAT_DISABLED",
+   "ned2dish_quaternion": {
+    "q_scalar": -0.12395031,
+    "q_x": 0.64954287,
+    "q_y": -0.7369186,
+    "q_z": 0.14029011
+   },
+   "obstruction_stats": {
+    "avg_prolonged_obstruction_duration_s": 1.1760631,
+    "avg_prolonged_obstruction_interval_s": 192.0,
+    "fraction_obstructed": 0.1247733,
+    "patches_valid": 2757,
+    "time_obstructed": 0.03233899,
+    "valid_s": 10188.0
+   },
+   "plc_stats": {
+    "port_1_stats": {},
+    "port_2_stats": {},
+    "port_3_stats": {}
+   },
+   "pop_ping_latency_ms": 19.449392,
+   "ready_states": {
+    "aap": true,
+    "l1l2": true,
+    "rf": true,
+    "scp": true,
+    "xphy": true
+   },
+   "seconds_to_first_nonempty_slot": 1790399000.0,
+   "seconds_until_swupdate_reboot_possible": -1,
+   "software_update_state": "REBOOT_REQUIRED",
+   "software_update_stats": {
+    "reboot_scheduled_utc_time": 1790420099,
+    "software_update_progress": 1.0,
+    "software_update_state": "REBOOT_REQUIRED",
+    "update_requires_reboot": true
+   },
+   "ul_bandwidth_restricted_reason": "NO_LIMIT",
+   "uplink_throughput_bps": 270406.78,
+   "upsu_stats": {}
+  },
+  "device_info": {
+   "device_info": {
+    "bootcount": 3,
+    "build_id": "5c0319fb-fd2f-49fe-ae51-ca0ba981305f.uterm_catapult_manifest.release",
+    "country_code": "US",
+    "generation_number": 1779130246,
+    "hardware_version": "mini1_pez_proto1",
+    "id": "id-demo-1",
+    "software_version": "2026.05.13.mr80201",
+    "utc_offset_s": -28800
+   }
+  },
+  "config": {
+   "dish_config": {
+    "apply_asset_class": true,
+    "apply_level_dish_mode": true,
+    "apply_location_request_mode": true,
+    "apply_power_save_duration_minutes": true,
+    "apply_power_save_mode": true,
+    "apply_power_save_start_minutes": true,
+    "apply_snow_melt_mode": true,
+    "apply_swupdate_reboot_hour": true,
+    "apply_swupdate_three_day_deferral_enabled": true,
+    "power_save_duration_minutes": 240,
+    "power_save_mode": true,
+    "power_save_start_minutes": 540,
+    "snow_melt_mode": "ALWAYS_OFF",
+    "swupdate_reboot_hour": 3
+   }
+  },
+  "diagnostics": {
+   "alerts": {
+    "obstructed": true,
+    "software_install_pending": true
+   },
+   "alignment_stats": {
+    "boresight_azimuth_deg": -6.348104,
+    "boresight_elevation_deg": 68.28761,
+    "desired_boresight_azimuth_deg": -17.962448,
+    "desired_boresight_elevation_deg": 67.989334
+   },
+   "disablement_code": "OKAY",
+   "hardware_self_test": "PASSED",
+   "hardware_version": "mini1_pez_proto1",
+   "id": "id-demo-1",
+   "location": {},
+   "software_version": "2026.05.13.mr80201",
+   "utc_offset_s": -28800
+  },
+  "location": null,
+  "location_error": "PERMISSION_DENIED: GetLocation requests disabled due to policy"
+ },
+ "router": {
+  "status": {
+   "alerts": {
+    "install_pending": true
+   },
+   "calibration_partitions_state": "CALIBRATION_PARTITIONS_STATE_ABSENT_BOTH_SIDES",
+   "client_index": 2,
+   "clients": [
+    {
+     "device_id": "device_id-demo-2",
+     "iface": "ETH",
+     "mac_address": "02:00:00:00:00:01",
+     "name": "client-1",
+     "role": "CONTROLLER",
+     "rx_stats": {},
+     "tx_stats": {},
+     "upload_mb": 740
+    },
+    {
+     "alerts": {},
+     "associated_time_s": 4313,
+     "captive_client_id": "captive_client_id-demo-1",
+     "channel_width": 80,
+     "client_id": 220298828,
+     "dhcp_lease_active": true,
+     "dhcp_lease_found": true,
+     "dhcp_lease_renewed": true,
+     "domain": "lan",
+     "dot11v_support": true,
+     "fqcodel_info": {
+      "deqs_flow_new": 44617,
+      "deqs_flow_old_deficit": 1365256,
+      "deqs_flow_old_starvation": 536,
+      "deqs_new": 52890,
+      "deqs_old": 441561,
+      "enqs_fqcodel": 494451,
+      "enqs_hi_prio": 374,
+      "enqs_new": 44617,
+      "enqs_old": 449834
+     },
+     "hops_from_controller": 1,
+     "iface": "RF_5GHZ",
+     "iface_name": "rax0",
+     "ip_address": "192.168.1.89",
+     "ipv6_addresses": [
+      "2001:db8::1",
+      "2001:db8::2",
+      "2001:db8::3",
+      "2001:db8::4"
+     ],
+     "mac_address": "02:00:00:00:00:02",
+     "name": "client-2",
+     "role": "CLIENT",
+     "rx_stats": {
+      "bandwidth": 80,
+      "bytes": 623576741,
+      "guard_ns": 800,
+      "mcs": 5,
+      "nss": 2,
+      "phy_mode": 4,
+      "rate_mbps": 468,
+      "rate_mbps_last_15s": 416.8125,
+      "rate_mbps_last_1m_avg": 414.45764,
+      "throughput_mbps_last_15s_avg": 0.13224323
+     },
+     "rx_stats_valid": true,
+     "seconds_until_dhcp_lease_expires": 2889.458,
+     "signal_strength": -75.0,
+     "snr": 13.0,
+     "steer_state": 2,
+     "swq_checks": 43129,
+     "swq_checks_non_empty": 13,
+     "tx_stats": {
+      "bandwidth": 80,
+      "bytes": 29909183,
+      "guard_ns": 400,
+      "mcs": 5,
+      "nss": 1,
+      "phy_mode": 4,
+      "rate_mbps": 260,
+      "rate_mbps_last_15s": 222.5,
+      "rate_mbps_last_30s": 234.3871,
+      "throughput_mbps_last_15s_avg": 0.014381647
+     },
+     "tx_stats_valid": true,
+     "upload_mb": 5,
+     "upstream_mac_address": "02:00:00:00:00:01"
+    },
+    {
+     "alerts": {},
+     "associated_time_s": 2818,
+     "captive_client_id": "captive_client_id-demo-2",
+     "channel_width": 80,
+     "client_id": 3322264325,
+     "dhcp_lease_active": true,
+     "dhcp_lease_found": true,
+     "dhcp_lease_renewed": true,
+     "domain": "lan",
+     "dot11v_support": true,
+     "fqcodel_info": {
+      "deqs_flow_new": 50512,
+      "deqs_flow_old_deficit": 304691,
+      "deqs_flow_old_starvation": 2189,
+      "deqs_new": 64834,
+      "deqs_old": 102578,
+      "enqs_fqcodel": 167412,
+      "enqs_hi_prio": 3316,
+      "enqs_new": 50512,
+      "enqs_old": 116900
+     },
+     "hops_from_controller": 1,
+     "iface": "RF_5GHZ",
+     "iface_name": "rax0",
+     "ip_address": "192.168.1.74",
+     "mac_address": "02:00:00:00:00:03",
+     "name": "client-3",
+     "role": "CLIENT",
+     "rx_stats": {
+      "bandwidth": 80,
+      "bytes": 145947139,
+      "guard_ns": 800,
+      "mcs": 6,
+      "nss": 2,
+      "phy_mode": 4,
+      "rate_mbps": 526,
+      "rate_mbps_last_15s": 522.4667,
+      "rate_mbps_last_1m_avg": 558.0339,
+      "throughput_mbps_last_15s_avg": 0.34616157,
+      "throughput_mbps_last_1m_avg": 0.050847456
+     },
+     "rx_stats_valid": true,
+     "seconds_until_dhcp_lease_expires": 3482.9062,
+     "signal_strength": -76.0,
+     "snr": 12.0,
+     "steer_state": 2,
+     "swq_checks": 28176,
+     "tx_stats": {
+      "bandwidth": 80,
+      "bytes": 36775788,
+      "guard_ns": 800,
+      "mcs": 3,
+      "nss": 2,
+      "phy_mode": 4,
+      "rate_mbps": 243,
+      "rate_mbps_last_15s": 251.33333,
+      "rate_mbps_last_30s": 283.16666,
+      "throughput_mbps_last_15s_avg": 0.08524921
+     },
+     "tx_stats_valid": true,
+     "upload_mb": 10,
+     "upstream_mac_address": "02:00:00:00:00:01"
+    }
+   ],
+   "config": {
+    "boot": {
+     "api_version_even_side": 126,
+     "count_by_reason": {
+      "0": 3,
+      "1": 4,
+      "5": 1
+     },
+     "even_side_software_version": "2026.05.08.mr76937",
+     "last_count": 8,
+     "last_reason": "CONFIG_UPDATE",
+     "odd_side_software_version": "2026.09.09.mr85833"
+    },
+    "boot_count": 8,
+    "client_configs": [
+     {
+      "client_id": 2328176856,
+      "given_name": "client-4",
+      "mac_address": "02:00:00:00:00:04"
+     }
+    ],
+    "country_code": "US",
+    "incarnation": 13594568786198544740,
+    "mac_lan": "02:00:00:00:00:01",
+    "mac_wan": "02:00:00:00:00:05",
+    "networks": [
+     {
+      "basic_service_sets": [
+       {
+        "auth_open": {},
+        "band": "RF_2GHZ",
+        "bssid": "02:00:00:00:00:06",
+        "iface_name": "ra0",
+        "ssid": "STARLINK-DEMO-1"
+       },
+       {
+        "auth_open": {},
+        "band": "RF_5GHZ",
+        "bssid": "02:00:00:00:00:07",
+        "iface_name": "rax0",
+        "ssid": "STARLINK-DEMO-1"
+       }
+      ],
+      "dhcpv4_end": 254,
+      "dhcpv4_lease_duration_s": 3600,
+      "dhcpv4_start": 20,
+      "dns_forward_rules": [
+       {
+        "domains": [
+         "lan"
+        ],
+        "server_addresses": [
+         "1.1.1.3",
+         "1.0.0.3",
+         "2001:db8::7",
+         "2001:db8::8"
+        ]
+       }
+      ],
+      "domain": "lan",
+      "ipv4": "192.168.1.1/24",
+      "vlan": 100
+     }
+    ],
+    "outdoor_mode": true,
+    "setup_complete": true,
+    "wan_ack_suppression": {
+     "cake_ack_filter_aggressive": true,
+     "cake_queue_bandwidth": 1.75,
+     "htb_ack_queue_ceil": 2.5,
+     "htb_ack_queue_rate": 2.0
+    },
+    "wan_host_dscp_mark": 1
+   },
+   "device_info": {
+    "anti_rollback_version": 1,
+    "board_rev": 3,
+    "boot": {
+     "api_version_even_side": 126,
+     "count_by_reason": {
+      "0": 3,
+      "1": 4,
+      "5": 1
+     },
+     "even_side_software_version": "2026.05.08.mr76937",
+     "last_count": 8,
+     "last_reason": "CONFIG_UPDATE",
+     "odd_side_software_version": "2026.09.09.mr85833"
+    },
+    "bootcount": 8,
+    "country_code": "US",
+    "dish_cohoused": true,
+    "hardware_index": "ROUTER_MINI_COHOUSED_1",
+    "hardware_version": "v4",
+    "id": "id-demo-2",
+    "manufactured_version": "2026.05.08.mr76937",
+    "software_version": "2026.05.08.mr76937"
+   },
+   "device_state": {
+    "uptime_s": 10878
+   },
+   "dhcp_servers": [
+    {
+     "domain": "lan",
+     "leases": [
+      {
+       "active": true,
+       "client_id": 2328176856,
+       "expires_time": "2026-09-26 08:33:15.402209483 +0000 UTC m=+12174.241949684",
+       "ip_address": "192.168.1.125",
+       "mac_address": "02:00:00:00:00:04"
+      },
+      {
+       "active": true,
+       "client_id": 220298828,
+       "expires_time": "2026-09-26 08:59:14.284143251 +0000 UTC m=+13733.123882902",
+       "hostname": "client-2",
+       "ip_address": "192.168.1.89",
+       "mac_address": "02:00:00:00:00:02"
+      },
+      {
+       "active": true,
+       "client_id": 3322264325,
+       "expires_time": "2026-09-26 09:09:07.732429327 +0000 UTC m=+14326.572168678",
+       "hostname": "client-3",
+       "ip_address": "192.168.1.74",
+       "mac_address": "02:00:00:00:00:03"
+      }
+     ],
+     "subnet": "192.168.1.0/24"
+    },
+    {
+     "domain": "lan",
+     "subnet": "192.168.1.0/24"
+    },
+    {
+     "domain": "lan",
+     "subnet": "192.168.1.0/24"
+    }
+   ],
+   "dish_disablement_code": "OKAY",
+   "dish_id": "dish_id-demo-1",
+   "dish_ping_latency_ms": 0.50135,
+   "has_client_index": true,
+   "ipv4_wan_address": "100.64.0.1/10",
+   "ipv6_wan_addresses": [
+    "2001:db8::5",
+    "2001:db8::6"
+   ],
+   "ping_drop_rate_5m": 0.06666667,
+   "ping_latency_ms": 31.219,
+   "pop_ipv6_ping_drop_rate": 0.5,
+   "pop_ipv6_ping_drop_rate_5m": 0.016666668,
+   "pop_ipv6_ping_latency_ms": 17.611,
+   "pop_ping_drop_rate": 0.5,
+   "pop_ping_drop_rate_5m": 0.016666668,
+   "pop_ping_latency_ms": 16.826,
+   "radius_stats": {},
+   "secs_since_last_public_ipv4_change": 10772.289,
+   "setup_requirement": {},
+   "software_update_stats": {
+    "running_version": "2026.05.08.mr76937",
+    "seconds_since_get_target_versions": 5764.2256,
+    "state": "REBOOT_PENDING"
+   },
+   "utc_ns": 1790410265817791409
+  },
+  "clients": [
+   {
+    "device_id": "device_id-demo-2",
+    "iface": "ETH",
+    "mac_address": "02:00:00:00:00:01",
+    "name": "client-1",
+    "role": "CONTROLLER",
+    "rx_stats": {},
+    "tx_stats": {},
+    "upload_mb": 740
+   },
+   {
+    "alerts": {},
+    "associated_time_s": 4314,
+    "captive_client_id": "captive_client_id-demo-1",
+    "channel_width": 80,
+    "client_id": 220298828,
+    "dhcp_lease_active": true,
+    "dhcp_lease_found": true,
+    "dhcp_lease_renewed": true,
+    "domain": "lan",
+    "dot11v_support": true,
+    "fqcodel_info": {
+     "deqs_flow_new": 44624,
+     "deqs_flow_old_deficit": 1365284,
+     "deqs_flow_old_starvation": 536,
+     "deqs_new": 52897,
+     "deqs_old": 441568,
+     "enqs_fqcodel": 494465,
+     "enqs_hi_prio": 374,
+     "enqs_new": 44624,
+     "enqs_old": 449841
+    },
+    "hops_from_controller": 1,
+    "iface": "RF_5GHZ",
+    "iface_name": "rax0",
+    "ip_address": "192.168.1.89",
+    "ipv6_addresses": [
+     "2001:db8::1",
+     "2001:db8::2",
+     "2001:db8::3",
+     "2001:db8::4"
+    ],
+    "mac_address": "02:00:00:00:00:02",
+    "name": "client-2",
+    "role": "CLIENT",
+    "rx_stats": {
+     "bandwidth": 80,
+     "bytes": 623591777,
+     "guard_ns": 800,
+     "mcs": 4,
+     "nss": 2,
+     "phy_mode": 4,
+     "rate_mbps": 351,
+     "rate_mbps_last_15s": 409.5,
+     "rate_mbps_last_1m_avg": 413.4,
+     "throughput_mbps_last_15s_avg": 0.13137923
+    },
+    "rx_stats_valid": true,
+    "seconds_until_dhcp_lease_expires": 2888.458,
+    "signal_strength": -75.0,
+    "snr": 13.0,
+    "steer_state": 2,
+    "swq_checks": 43139,
+    "swq_checks_non_empty": 13,
+    "tx_stats": {
+     "bandwidth": 80,
+     "bytes": 29910011,
+     "guard_ns": 400,
+     "mcs": 5,
+     "nss": 1,
+     "phy_mode": 4,
+     "rate_mbps": 260,
+     "rate_mbps_last_15s": 227.8125,
+     "rate_mbps_last_30s": 234.29033,
+     "throughput_mbps_last_15s_avg": 0.014193647
+    },
+    "tx_stats_valid": true,
+    "upload_mb": 5,
+    "upstream_mac_address": "02:00:00:00:00:01"
+   },
+   {
+    "alerts": {},
+    "associated_time_s": 2819,
+    "captive_client_id": "captive_client_id-demo-2",
+    "channel_width": 80,
+    "client_id": 3322264325,
+    "dhcp_lease_active": true,
+    "dhcp_lease_found": true,
+    "dhcp_lease_renewed": true,
+    "domain": "lan",
+    "dot11v_support": true,
+    "fqcodel_info": {
+     "deqs_flow_new": 50557,
+     "deqs_flow_old_deficit": 304746,
+     "deqs_flow_old_starvation": 2189,
+     "deqs_new": 64880,
+     "deqs_old": 102595,
+     "enqs_fqcodel": 167475,
+     "enqs_hi_prio": 3316,
+     "enqs_new": 50557,
+     "enqs_old": 116918
+    },
+    "hops_from_controller": 1,
+    "iface": "RF_5GHZ",
+    "iface_name": "rax0",
+    "ip_address": "192.168.1.74",
+    "mac_address": "02:00:00:00:00:03",
+    "name": "client-3",
+    "role": "CLIENT",
+    "rx_stats": {
+     "bandwidth": 80,
+     "bytes": 145980315,
+     "guard_ns": 800,
+     "mcs": 7,
+     "nss": 2,
+     "phy_mode": 4,
+     "rate_mbps": 585,
+     "rate_mbps_last_15s": 522.4667,
+     "rate_mbps_last_1m_avg": 558.48334,
+     "throughput_mbps_last_15s_avg": 0.3466565,
+     "throughput_mbps_last_1m_avg": 0.05
+    },
+    "rx_stats_valid": true,
+    "seconds_until_dhcp_lease_expires": 3481.9062,
+    "signal_strength": -76.0,
+    "snr": 12.0,
+    "steer_state": 2,
+    "swq_checks": 28186,
+    "tx_stats": {
+     "bandwidth": 80,
+     "bytes": 36782300,
+     "guard_ns": 400,
+     "mcs": 3,
+     "nss": 2,
+     "phy_mode": 4,
+     "rate_mbps": 260,
+     "rate_mbps_last_15s": 252.46666,
+     "rate_mbps_last_30s": 283.73334,
+     "throughput_mbps_last_15s_avg": 0.08294094
+    },
+    "tx_stats_valid": true,
+    "upload_mb": 10,
+    "upstream_mac_address": "02:00:00:00:00:01"
+   }
+  ],
+  "device_info": {
+   "device_info": {
+    "anti_rollback_version": 1,
+    "board_rev": 3,
+    "boot": {
+     "api_version_even_side": 126,
+     "count_by_reason": {
+      "0": 3,
+      "1": 4,
+      "5": 1
+     },
+     "even_side_software_version": "2026.05.08.mr76937",
+     "last_count": 8,
+     "last_reason": "CONFIG_UPDATE",
+     "odd_side_software_version": "2026.09.09.mr85833"
+    },
+    "bootcount": 8,
+    "country_code": "US",
+    "dish_cohoused": true,
+    "hardware_index": "ROUTER_MINI_COHOUSED_1",
+    "hardware_version": "v4",
+    "id": "id-demo-2",
+    "manufactured_version": "2026.05.08.mr76937",
+    "software_version": "2026.05.08.mr76937"
+   }
+  },
+  "ping": {
+   "results": {
+    "103.10.124.1": {
+     "dropRate": 0.84210527,
+     "latencyMs": 202.55467,
+     "target": {
+      "address": "103.10.124.1",
+      "location": "Singapore",
+      "service": "Counter-Strike: GO"
+     }
+    },
+    "103.10.125.1": {
+     "dropRate": 0.8,
+     "latencyMs": 165.3435,
+     "target": {
+      "address": "103.10.125.1",
+      "location": "Sydney",
+      "service": "Counter-Strike: GO"
+     }
+    },
+    "104.160.131.3": {
+     "dropRate": 1.0,
+     "latencyMs": NaN,
+     "target": {
+      "address": "104.160.131.3",
+      "location": "Chicago",
+      "service": "League of Legends"
+     }
+    },
+    "104.160.136.3": {
+     "dropRate": 1.0,
+     "latencyMs": NaN,
+     "target": {
+      "address": "104.160.136.3",
+      "location": "Los Angeles",
+      "service": "League of Legends"
+     }
+    },
+    "104.160.141.3": {
+     "dropRate": 1.0,
+     "latencyMs": NaN,
+     "target": {
+      "address": "104.160.141.3",
+      "location": "Amsterdam",
+      "service": "League of Legends"
+     }
+    },
+    "104.160.142.3": {
+     "dropRate": 1.0,
+     "latencyMs": NaN,
+     "target": {
+      "address": "104.160.142.3",
+      "location": "Frankfurt",
+      "service": "League of Legends"
+     }
+    },
+    "104.160.156.1": {
+     "dropRate": 1.0,
+     "latencyMs": NaN,
+     "target": {
+      "address": "104.160.156.1",
+      "location": "Sydney",
+      "service": "League of Legends"
+     }
+    },
+    "146.66.152.1": {
+     "dropRate": 1.0,
+     "latencyMs": NaN,
+     "target": {
+      "address": "146.66.152.1",
+      "location": "Luxemborg",
+      "service": "Counter-Strike: GO"
+     }
+    },
+    "146.66.155.1": {
+     "dropRate": 0.7647059,
+     "latencyMs": 174.273,
+     "target": {
+      "address": "146.66.155.1",
+      "location": "Vienna",
+      "service": "Counter-Strike: GO"
+     }
+    },
+    "146.66.156.1": {
+     "dropRate": 1.0,
+     "latencyMs": NaN,
+     "target": {
+      "address": "146.66.156.1",
+      "location": "Stockholm",
+      "service": "Counter-Strike: GO"
+     }
+    },
+    "185.25.183.1": {
+     "dropRate": 0.8,
+     "latencyMs": 272.234,
+     "target": {
+      "address": "185.25.183.1",
+      "location": "Dubai",
+      "service": "Counter-Strike: GO"
+     }
+    },
+    "192.168.100.1": {
+     "latencyMs": 0.6163684,
+     "target": {
+      "address": "192.168.100.1",
+      "service": "Your Starlink"
+     }
+    },
+    "192.69.96.1": {
+     "dropRate": 1.0,
+     "latencyMs": NaN,
+     "target": {
+      "address": "192.69.96.1",
+      "location": "Seattle",
+      "service": "Counter-Strike: GO"
+     }
+    },
+    "197.80.200.1": {
+     "dropRate": 1.0,
+     "latencyMs": NaN,
+     "target": {
+      "address": "197.80.200.1",
+      "location": "Johannesburg",
+      "service": "Counter-Strike: GO"
+     }
+    },
+    "208.78.164.1": {
+     "dropRate": 0.84210527,
+     "latencyMs": 58.474,
+     "target": {
+      "address": "208.78.164.1",
+      "location": "Virginia",
+      "service": "Counter-Strike: GO"
+     }
+    },
+    "209.197.29.1": {
+     "dropRate": 1.0,
+     "latencyMs": NaN,
+     "target": {
+      "address": "209.197.29.1",
+      "location": "S\u00e3o Paulo",
+      "service": "Counter-Strike: GO"
+     }
+    },
+    "dynamodb.ap-east-1.amazonaws.com": {
+     "dropRate": 0.61538464,
+     "latencyMs": 194.69441,
+     "target": {
+      "address": "dynamodb.ap-east-1.amazonaws.com",
+      "location": "Hong Kong",
+      "service": "Fortnite"
+     }
+    },
+    "dynamodb.ap-northeast-1.amazonaws.com": {
+     "dropRate": 0.7368421,
+     "latencyMs": 145.72679,
+     "target": {
+      "address": "dynamodb.ap-northeast-1.amazonaws.com",
+      "location": "Tokyo",
+      "service": "Fortnite"
+     }
+    },
+    "dynamodb.ap-northeast-2.amazonaws.com": {
+     "dropRate": 0.75,
+     "latencyMs": 167.151,
+     "target": {
+      "address": "dynamodb.ap-northeast-2.amazonaws.com",
+      "location": "Seoul",
+      "service": "Fortnite"
+     }
+    },
+    "dynamodb.ap-northeast-3.amazonaws.com": {
+     "dropRate": 0.7368421,
+     "latencyMs": 151.2826,
+     "target": {
+      "address": "dynamodb.ap-northeast-3.amazonaws.com",
+      "location": "Osaka",
+      "service": "Fortnite"
+     }
+    },
+    "dynamodb.ap-south-1.amazonaws.com": {
+     "dropRate": 0.7368421,
+     "latencyMs": 281.5808,
+     "target": {
+      "address": "dynamodb.ap-south-1.amazonaws.com",
+      "location": "Mumbai",
+      "service": "Fortnite"
+     }
+    },
+    "dynamodb.ap-southeast-1.amazonaws.com": {
+     "dropRate": 0.7894737,
+     "latencyMs": 218.671,
+     "target": {
+      "address": "dynamodb.ap-southeast-1.amazonaws.com",
+      "location": "Singapore",
+      "service": "Fortnite"
+     }
+    },
+    "dynamodb.ap-southeast-2.amazonaws.com": {
+     "dropRate": 0.7368421,
+     "latencyMs": 166.007,
+     "target": {
+      "address": "dynamodb.ap-southeast-2.amazonaws.com",
+      "location": "Sydney",
+      "service": "Fortnite"
+     }
+    },
+    "dynamodb.ca-central-1.amazonaws.com": {
+     "dropRate": 0.7368421,
+     "latencyMs": 104.7126,
+     "target": {
+      "address": "dynamodb.ca-central-1.amazonaws.com",
+      "location": "Montreal",
+      "service": "Fortnite"
+     }
+    },
+    "dynamodb.cn-north-1.amazonaws.com.cn": {
+     "dropRate": 0.7894737,
+     "latencyMs": 202.2385,
+     "target": {
+      "address": "dynamodb.cn-north-1.amazonaws.com.cn",
+      "location": "Beijing",
+      "service": "Fortnite"
+     }
+    },
+    "dynamodb.cn-northwest-1.amazonaws.com.cn": {
+     "dropRate": 0.84210527,
+     "latencyMs": 221.435,
+     "target": {
+      "address": "dynamodb.cn-northwest-1.amazonaws.com.cn",
+      "location": "Ningxia",
+      "service": "Fortnite"
+     }
+    },
+    "dynamodb.eu-central-1.amazonaws.com": {
+     "dropRate": 0.7894737,
+     "latencyMs": 180.71326,
+     "target": {
+      "address": "dynamodb.eu-central-1.amazonaws.com",
+      "location": "Frankfurt",
+      "service": "Fortnite"
+     }
+    },
+    "dynamodb.eu-north-1.amazonaws.com": {
+     "dropRate": 0.75,
+     "latencyMs": 186.64441,
+     "target": {
+      "address": "dynamodb.eu-north-1.amazonaws.com",
+      "location": "Stockholm",
+      "service": "Fortnite"
+     }
+    },
+    "dynamodb.eu-west-1.amazonaws.com": {
+     "dropRate": 0.5833333,
+     "latencyMs": 174.9118,
+     "target": {
+      "address": "dynamodb.eu-west-1.amazonaws.com",
+      "location": "Ireland",
+      "service": "Fortnite"
+     }
+    },
+    "dynamodb.eu-west-2.amazonaws.com": {
+     "dropRate": 0.6875,
+     "latencyMs": 179.6604,
+     "target": {
+      "address": "dynamodb.eu-west-2.amazonaws.com",
+      "location": "London",
+      "service": "Fortnite"
+     }
+    },
+    "dynamodb.eu-west-3.amazonaws.com": {
+     "dropRate": 0.7894737,
+     "latencyMs": 172.485,
+     "target": {
+      "address": "dynamodb.eu-west-3.amazonaws.com",
+      "location": "Paris",
+      "service": "Fortnite"
+     }
+    },
+    "dynamodb.me-south-1.amazonaws.com": {
+     "dropRate": 1.0,
+     "latencyMs": NaN,
+     "target": {
+      "address": "dynamodb.me-south-1.amazonaws.com",
+      "location": "Bahrain",
+      "service": "Fortnite"
+     }
+    },
+    "dynamodb.sa-east-1.amazonaws.com": {
+     "dropRate": 0.75,
+     "latencyMs": 214.9622,
+     "target": {
+      "address": "dynamodb.sa-east-1.amazonaws.com",
+      "location": "S\u00e3o Paulo",
+      "service": "Fortnite"
+     }
+    },
+    "dynamodb.us-east-1.amazonaws.com": {
+     "dropRate": 0.5,
+     "latencyMs": 98.6166,
+     "target": {
+      "address": "dynamodb.us-east-1.amazonaws.com",
+      "location": "Virginia",
+      "service": "Fortnite"
+     }
+    },
+    "dynamodb.us-east-2.amazonaws.com": {
+     "dropRate": 0.7368421,
+     "latencyMs": 83.696205,
+     "target": {
+      "address": "dynamodb.us-east-2.amazonaws.com",
+      "location": "Ohio",
+      "service": "Fortnite"
+     }
+    },
+    "dynamodb.us-west-1.amazonaws.com": {
+     "dropRate": 0.7894737,
+     "latencyMs": 21.92175,
+     "target": {
+      "address": "dynamodb.us-west-1.amazonaws.com",
+      "location": "California",
+      "service": "Fortnite"
+     }
+    },
+    "dynamodb.us-west-2.amazonaws.com": {
+     "dropRate": 0.7368421,
+     "latencyMs": 50.301,
+     "target": {
+      "address": "dynamodb.us-west-2.amazonaws.com",
+      "location": "Oregon",
+      "service": "Fortnite"
+     }
+    },
+    "google.com": {
+     "dropRate": 0.7647059,
+     "latencyMs": 18.9005,
+     "target": {
+      "address": "google.com",
+      "service": "Google"
+     }
+    }
+   }
+  }
+ },
+ "explain": {
+  "headline": {
+   "text": "online",
+   "tone": "ok",
+   "detail": "19 ms to the internet \u00b7 update pending, restarts ~03:54"
+  },
+  "alerts": [
+   {
+    "key": "install_pending",
+    "text": "an update is waiting to install",
+    "tone": "ok"
+   }
+  ],
+  "aim": {
+   "az_now": 352.855464,
+   "az_want": 342.037548,
+   "el_now": 68.42079,
+   "el_want": 67.98934,
+   "turn_deg": -10.817916000000025,
+   "tilt_deg": -0.4314499999999981,
+   "ok": false,
+   "text": [
+    "turn it 11\u00b0 to the left, standing behind it",
+    "tilt is fine (0\u00b0 off)"
+   ],
+   "confidence": "FILTER_CONVERGED",
+   "uncertainty_deg": 0.72698814
+  },
+  "facts": [
+   [
+    "dish hardware",
+    "mini1_pez_proto1"
+   ],
+   [
+    "dish firmware",
+    "2026.05.13.mr80201"
+   ],
+   [
+    "router hardware",
+    "v4 (router mini cohoused 1)"
+   ],
+   [
+    "router firmware",
+    "2026.05.08.mr76937"
+   ],
+   [
+    "country",
+    "US"
+   ],
+   [
+    "service",
+    "consumer"
+   ],
+   [
+    "mobility",
+    "mobile"
+   ],
+   [
+    "dish uptime",
+    "3 h 8 min"
+   ],
+   [
+    "ethernet",
+    "1000 Mb/s"
+   ],
+   [
+    "gps",
+    "fixed, 21 satellites"
+   ],
+   [
+    "software update",
+    "installed, needs a restart"
+   ],
+   [
+    "update restart",
+    "~03:54"
+   ],
+   [
+    "update hour",
+    "03:00"
+   ],
+   [
+    "snow melt",
+    "off"
+   ],
+   [
+    "power save",
+    "on, 09:00\u201313:00"
+   ],
+   [
+    "location sharing",
+    "off"
+   ],
+   [
+    "obstructed sky",
+    "12.5 %"
+   ],
+   [
+    "time obstructed",
+    "3.2 %"
+   ],
+   [
+    "long obstructions",
+    "1.2 s long, every 3 min"
+   ],
+   [
+    "signal",
+    "above the noise floor"
+   ],
+   [
+    "bandwidth",
+    "no limit"
+   ],
+   [
+    "router uptime",
+    "3 h 1 min"
+   ],
+   [
+    "router \u2192 dish",
+    "0.5 ms"
+   ],
+   [
+    "router \u2192 Starlink",
+    "17 ms, 1.7 % lost over 5 min"
+   ],
+   [
+    "router \u2192 internet",
+    "31 ms, 6.7 % lost over 5 min"
+   ]
+  ]
+ },
+ "controls": [
+  {
+   "name": "restart",
+   "label": "restart dish",
+   "group": "restart",
+   "confirm": "restart the dish? the internet drops while it boots, usually a minute or two.",
+   "params": [],
+   "available": true,
+   "reason": null,
+   "current": {}
+  },
+  {
+   "name": "snow_melt",
+   "label": "snow melt",
+   "group": "settings",
+   "confirm": "change the dish's snow melt setting?",
+   "params": [
+    {
+     "name": "mode",
+     "type": "choice",
+     "choices": [
+      "AUTO",
+      "ALWAYS_ON",
+      "ALWAYS_OFF"
+     ],
+     "label": "snow melt"
+    }
+   ],
+   "available": true,
+   "reason": null,
+   "current": {
+    "mode": "ALWAYS_OFF"
+   }
+  },
+  {
+   "name": "power_save",
+   "label": "power save",
+   "group": "settings",
+   "confirm": "change the power-save schedule? while the dish sleeps there is no internet.",
+   "params": [
+    {
+     "name": "enabled",
+     "type": "bool",
+     "label": "power save on"
+    },
+    {
+     "name": "start_minutes",
+     "type": "int",
+     "min": 0,
+     "max": 1439,
+     "label": "starts, minutes after midnight (dish's local time)"
+    },
+    {
+     "name": "duration_minutes",
+     "type": "int",
+     "min": 1,
+     "max": 1440,
+     "label": "lasts, minutes"
+    }
+   ],
+   "available": true,
+   "reason": null,
+   "current": {
+    "enabled": true,
+    "start_minutes": 540,
+    "duration_minutes": 240
+   }
+  },
+  {
+   "name": "share_location",
+   "label": "share location",
+   "group": "settings",
+   "confirm": "change whether devices on your network may read the dish's location?",
+   "params": [
+    {
+     "name": "share",
+     "type": "bool",
+     "label": "share location on the local network"
+    }
+   ],
+   "available": true,
+   "reason": null,
+   "current": {
+    "share": false
+   }
+  },
+  {
+   "name": "clear_obstructions",
+   "label": "clear obstruction map",
+   "group": "maintenance",
+   "confirm": "clear the obstruction map? the dish builds it again as satellites pass, which takes hours.",
+   "params": [],
+   "available": true,
+   "reason": null,
+   "current": {}
+  },
+  {
+   "name": "stow",
+   "label": "stow",
+   "group": "maintenance",
+   "confirm": "stow or unstow the dish? stowed, it lies flat and there is no internet until you unstow it.",
+   "params": [
+    {
+     "name": "unstow",
+     "type": "bool",
+     "label": "unstow (off: stow)"
+    }
+   ],
+   "available": false,
+   "reason": "this dish has no motors",
+   "current": {
+    "unstow": false
+   }
+  },
+  {
+   "name": "speedtest",
+   "label": "speed test",
+   "group": "tests",
+   "confirm": "run a speed test through the router? it fills the connection for a short while and counts toward any data limit.",
+   "params": [],
+   "available": true,
+   "reason": null,
+   "current": {}
+  },
+  {
+   "name": "ping",
+   "label": "ping test",
+   "group": "tests",
+   "confirm": "ask the router to ping its test hosts?",
+   "params": [],
+   "available": true,
+   "reason": null,
+   "current": {}
+  }
+ ],
+ "running": {
+  "speedtest": null
+ },
+ "events": [
+  {
+   "t": 1790409655.44,
+   "kind": "app",
+   "text": "localdish 0.1.0 started (demo)"
+  },
+  {
+   "t": 1790409655.64,
+   "kind": "dish",
+   "text": "schema loaded: 19 files"
+  },
+  {
+   "t": 1790409655.94,
+   "kind": "dish",
+   "text": "reachable"
+  },
+  {
+   "t": 1790409656.3400002,
+   "kind": "router",
+   "text": "schema loaded: 19 files"
+  },
+  {
+   "t": 1790409656.44,
+   "kind": "router",
+   "text": "reachable"
+  },
+  {
+   "t": 1790409657.24,
+   "kind": "dish",
+   "text": "headline: online"
+  },
+  {
+   "t": 1790410170.44,
+   "kind": "control",
+   "text": "demo: ping test"
+  }
+ ]
+}
