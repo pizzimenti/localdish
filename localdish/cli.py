@@ -1,4 +1,4 @@
-"""localdish [--port 8686] [--dish 192.168.100.1] [--router auto|ADDRESS|none] [--demo] [--version]"""
+"""localdish [--port 8686] [--dish 192.168.100.1] [--router auto|ADDRESS|none] [--demo] [--capture DIR] [--version]"""
 from __future__ import annotations
 
 import argparse
@@ -110,8 +110,24 @@ def parse(argv=None) -> argparse.Namespace:
     p.add_argument("--router", default="auto",
                    help="the router's address, 'auto' to find it (the default), or 'none' to leave it out")
     p.add_argument("--demo", action="store_true", help="show a recorded Starlink Mini; talk to no device")
+    p.add_argument("--capture", metavar="DIR",
+                   help="read the dish and router once, scrub what identifies you, write one JSON file to DIR, and exit")
     p.add_argument("--version", action="version", version=f"localdish {__version__}")
     return p.parse_args(argv)
+
+
+def real_devices(args: argparse.Namespace) -> tuple:
+    """(dish, router or None, the router's address or None) as grpcweb.Devices, finding the router if asked."""
+    from . import grpcweb
+    if args.router == "none":
+        router_host = None
+    elif args.router == "auto":
+        router_host = discover_router(gateway_candidates())
+    else:
+        router_host = args.router
+    dish = grpcweb.Device(args.dish, DISH_PORT)
+    router = grpcweb.Device(router_host, ROUTER_PORT) if router_host else None
+    return dish, router, router_host
 
 
 def build(args: argparse.Namespace, *, device=None, explain=None, log=None):
@@ -135,15 +151,7 @@ def build(args: argparse.Namespace, *, device=None, explain=None, log=None):
         hosts = {"dish": "demo", "router": "demo" if router else None}
         where = "demo: a recorded Starlink Mini"
     else:
-        from . import grpcweb
-        if args.router == "none":
-            router_host = None
-        elif args.router == "auto":
-            router_host = discover_router(gateway_candidates())
-        else:
-            router_host = args.router
-        dish = grpcweb.Device(args.dish, DISH_PORT)
-        router = grpcweb.Device(router_host, ROUTER_PORT) if router_host else None
+        dish, router, router_host = real_devices(args)
         hosts = {"dish": args.dish, "router": router_host}
         where = f"dish {args.dish}, router {router_host or 'none'}"
 
@@ -157,6 +165,18 @@ def build(args: argparse.Namespace, *, device=None, explain=None, log=None):
 
 def main(argv=None) -> int:
     args = parse(argv)
+    if args.capture:
+        from . import capture
+        if args.demo:
+            from . import demo
+            dish, router = demo.devices()
+            where = "the demo's recorded Starlink Mini"
+        else:
+            dish, router, router_host = real_devices(args)
+            where = f"dish {args.dish}, router {router_host or 'none'}"
+        print(f"localdish {__version__} capture ({where}): read-only, one read of each, {capture.SPACING_S:g} s apart",
+              flush=True)
+        return capture.run(args.capture, dish, router)
     try:
         p, httpd, line = build(args)
     except OSError as e:
