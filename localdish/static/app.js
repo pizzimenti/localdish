@@ -205,7 +205,8 @@
     };
     const alerts = st.alerts || {};
 
-    const lat = st.pop_ping_latency_ms, drop = st.pop_ping_drop_rate;
+    // proto3 leaves a zero off the wire: with a status in hand, no drop rate means none dropped
+    const lat = st.pop_ping_latency_ms, drop = isNum(st.pop_ping_drop_rate) ? st.pop_ping_drop_rate : isNum(lat) ? 0 : null;
     put("latency", "pop latency", "gauge", fmtMs(lat),
       isNum(drop) ? fmtPct(drop, 0) + " of pings lost now" : "",
       !isNum(lat) ? "" : drop >= 1 ? "bad" : drop > 0 ? "warn" : "ok");
@@ -299,7 +300,8 @@
     $("alerts-card").hidden = !list.length;
     $("alerts").replaceChildren(...list.map((a) => {
       const li = node("li", toneClass(a.tone));
-      li.append(node("span", null, a.text), node("code", null, a.key));
+      li.append(node("span", null, a.text || words(a.key || "alert")));
+      if (a.key) li.append(node("code", null, a.key));
       return li;
     }));
   }
@@ -319,11 +321,12 @@
     const n = Math.max(0, ...series.map((s) => s.values.length));
     let lo = opts.min !== undefined ? opts.min : Math.min(0, ...all);
     let hi = opts.max !== undefined ? opts.max : Math.max(lo + 1e-9, ...all);
-    // a few spikes would flatten everything else: scale to the 98th percentile and say that the peaks are cut off
+    // bursts of seconds-long latency would flatten the usual tens of ms into the axis: when the peak is over
+    // 5× the 90th percentile, scale to 4× it and print how high the peaks went
     let peak = null;
     if (opts.clip && all.length > 20) {
-      const p98 = all.slice().sort((a, b) => a - b)[Math.floor(all.length * 0.98)];
-      if (p98 > 0 && hi > 3 * p98) { peak = hi; hi = p98 * 1.5; }
+      const p90 = all.slice().sort((a, b) => a - b)[Math.floor(all.length * 0.9)];
+      if (p90 > 0 && hi > 5 * p90) { peak = hi; hi = p90 * 4; }
     }
     const step = niceStep(hi - lo || 1);
     if (opts.max === undefined) hi = Math.ceil(hi / step) * step || step;
@@ -510,7 +513,7 @@
       if (isNum(c.signal_strength)) { sig.append(bars(c.signal_strength), document.createTextNode(c.signal_strength.toFixed(0) + " dBm")); }
       else sig.textContent = "—";
       const rx = get(c, "rx_stats.rate_mbps"), tx = get(c, "tx_stats.rate_mbps");
-      const rate = node("td", null, isNum(rx) ? rx.toFixed(0) + " Mb/s" : "—");
+      const rate = node("td", "clients-rate", isNum(rx) ? rx.toFixed(0) + " Mb/s" : "—");
       if (isNum(tx)) rate.append(node("small", null, "send " + tx.toFixed(0) + " Mb/s"));
       tr.append(name, node("td", null, BANDS[c.iface] || (c.iface ? words(c.iface) : "—")), sig, rate,
         node("td", null, isNum(c.associated_time_s) ? fmtDur(c.associated_time_s) : "—"));
@@ -529,6 +532,9 @@
   const isChoice = (p) => Array.isArray(p.choices) || p.type === "enum" || p.type === "choice";
   const isClock = (p) => /start_minutes$/.test(p.name);
 
+  // a clock-time field shows a clock, so a label that explains "minutes after midnight" would only confuse
+  function labelOf(p) { const l = p.label || words(p.name); return isClock(p) ? l.replace(/,? ?minutes after midnight/, "") : l; }
+
   function showParam(p, v) {
     if (v === undefined || v === null) return "—";
     if (p.type === "bool") return v ? "on" : "off";
@@ -546,7 +552,7 @@
       input = node("input"); input.type = "checkbox";
       wrap.append(input, node("span", "track"), node("span", null, p.label || words(p.name)));
     } else {
-      wrap.append(node("span", null, p.label || words(p.name)));
+      wrap.append(node("span", null, labelOf(p)));
       if (isChoice(p)) {
         input = node("select");
         for (const c of p.choices || []) { const o = node("option", null, words(c)); o.value = c; input.append(o); }
@@ -622,7 +628,7 @@
     ctl.root.append(title, ctl.now);
     for (const p of c.params || []) ctl.root.append(paramInput(ctl, p));
     ctl.btn = node("button", "btn " + (c.group === "restart" || c.group === "maintenance" ? "danger" : "primary"),
-      (c.params || []).length ? "apply" : c.group === "tests" ? "run" : c.label || words(c.name));
+      (c.params || []).length ? "apply" : c.group === "tests" ? "run" : (c.label || words(c.name)).split(" ")[0]);
     ctl.btn.type = "button";
     ctl.btn.addEventListener("click", () => ask(ctl));
     ctl.reason = node("div", "reason");
@@ -674,7 +680,7 @@
     const c = ctl.def;
     $("confirm-title").textContent = c.label || words(c.name);
     $("confirm-text").textContent = c.confirm || "send this to the " + (c.target || "device") + "?";
-    $("confirm-params").replaceChildren(...(c.params || []).map((p) => node("li", null, (p.label || words(p.name)) + ": " + showParam(p, params[p.name]))));
+    $("confirm-params").replaceChildren(...(c.params || []).map((p) => node("li", null, labelOf(p) + ": " + showParam(p, params[p.name]))));
     $("confirm-ok").className = "btn " + (c.group === "restart" || c.group === "maintenance" ? "danger" : "primary");
     $("confirm").returnValue = "";
     $("confirm").showModal();
@@ -762,10 +768,13 @@
 
   function renderStaleness() {
     const hAge = ageOf(H && H.age_s, got.history);
-    for (const [card, el] of [["graph-card-1", "history-age-1"], ["graph-card-2", "history-age-2"], ["outages-card", "outages-age"]]) {
-      markAge($(card), $(el), hAge, STALE_S.history, "history");
+    for (const [card, el] of [[$("graph-card-1"), $("history-age-1")], [$("graph-card-2"), $("history-age-2")], [$("outages-card"), $("outages-age")]]) {
+      markAge(card, el, hAge, STALE_S.history, "history");
     }
     markAge($("map-card"), $("map-age"), ageOf(O && O.age_s, got.obstruction), STALE_S.obstruction, "the map");
+    const dAge = ageOf(S.localdish && S.localdish.dish && S.localdish.dish.age_s, got.state);
+    markAge($("aim-card"), null, dAge, STALE_S.dish);
+    markAge($("alerts-card"), null, dAge, STALE_S.dish);
     if (H && H.error) $("history-age-1").textContent = $("history-age-2").textContent = $("outages-age").textContent = "history: " + H.error;
     if (O && O.error) $("map-age").textContent = "map: " + O.error;
     renderLive();
