@@ -30,7 +30,7 @@ READS = {
         "explain.alerts[].text", "explain.alerts[].tone",
         "explain.aim.az_now", "explain.aim.az_want", "explain.aim.el_now", "explain.aim.el_want",
         "explain.aim.turn_deg?", "explain.aim.ok?", "explain.aim.text", "explain.aim.confidence",
-        "explain.aim.uncertainty_deg?", "explain.facts",
+        "explain.aim.uncertainty_deg?", "explain.aim.held_s~", "explain.facts",
         "controls[].name", "controls[].label", "controls[].group", "controls[].confirm", "controls[].params",
         "controls[].available", "controls[].reason?", "controls[].current",
         "running.speedtest?",

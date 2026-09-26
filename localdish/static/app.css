@@ -127,6 +127,7 @@ button { cursor: pointer; }
 .arrow path { fill: var(--c); }
 .legend .k-empty { border: 1px solid var(--border); }
 .aim ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 0.4rem; font-size: 0.9rem; }
+.held .aim { opacity: 0.55; }
 .aim-nums { margin-top: 0.75rem; font-size: 0.75rem; color: var(--muted); }
 
 /* alerts */
