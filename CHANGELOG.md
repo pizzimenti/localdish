@@ -1,6 +1,6 @@
 # changelog
 
-## unreleased
+## v0.1.0 — 2026-09-27
 - settings laid out like the Starlink app: a **sleep schedule** with sleep and wake as clock times and a 24-hour dial
   whose handles you drag (5-minute steps, or the arrow keys); **snow melt** as automatic / pre-heat / off; save stays
   greyed until something changes. location sharing moves to an advanced row that says what it does.
